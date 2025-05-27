@@ -10,7 +10,10 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    react(),
+    react({
+      tsDecorators: true,
+      plugins: [['@swc/plugin-emotion', {}]],
+    }),
     mode === 'development' &&
     componentTagger(),
   ].filter(Boolean),
@@ -30,5 +33,8 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
+  },
+  esbuild: {
+    target: 'es2020',
   },
 }));
