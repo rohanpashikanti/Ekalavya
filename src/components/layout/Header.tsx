@@ -26,7 +26,7 @@ const Header: React.FC = () => {
     <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-lg">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="text-xl font-bold text-white">
-          Aptitude Arena
+          {userData?.username || user?.email?.split('@')[0] || 'Aptitude Arena'}
         </Link>
 
         <div className="flex items-center gap-4">

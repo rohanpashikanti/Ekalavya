@@ -73,18 +73,23 @@ const Exam: React.FC = () => {
       
       // Check if the last quiz was yesterday
       const lastQuizDate = userData.lastQuizDate;
+      const now = new Date();
+      
       if (lastQuizDate) {
         const lastDate = new Date(lastQuizDate);
-        const today = new Date();
-        const diffDays = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+        const diffDays = Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
         
         if (diffDays === 1) {
+          // Consecutive day - increment streak
           newCurrentStreak++;
           newBestStreak = Math.max(newBestStreak, newCurrentStreak);
         } else if (diffDays > 1) {
+          // Gap of more than one day - reset streak
           newCurrentStreak = 1;
         }
+        // If same day, keep current streak
       } else {
+        // First quiz - start streak
         newCurrentStreak = 1;
         newBestStreak = 1;
       }
@@ -95,7 +100,7 @@ const Exam: React.FC = () => {
         score,
         total: topicId === 'daily-challenge' ? 25 : 20,
         timeTaken,
-        date: new Date().toISOString(),
+        date: now.toISOString(),
         questions: questions.map(q => ({
           question: q.question,
           userAnswer: q.userAnswer,
@@ -117,15 +122,18 @@ const Exam: React.FC = () => {
         bestStreak: newBestStreak,
         accuracy: newAccuracy,
         weeklyProgress: newWeeklyProgress,
-        lastQuizDate: new Date().toISOString(),
+        lastQuizDate: now.toISOString(),
         quizHistory: [newQuizEntry, ...userData.quizHistory]
       };
 
       // Save updated data
       saveUserData(user.id, updatedUserData);
 
-      // Show success message
-      alert('Exam results saved successfully!');
+      // Show success message with streak info
+      const streakMessage = newCurrentStreak > 1 
+        ? `Exam results saved! Your streak is now ${newCurrentStreak} days!`
+        : 'Exam results saved successfully!';
+      alert(streakMessage);
     } catch (error) {
       console.error('Error saving exam results:', error);
       alert('Failed to save exam results. Please try again.');
