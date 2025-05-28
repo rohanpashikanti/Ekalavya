@@ -19,11 +19,13 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { getUserData, getRecentQuizzes } from '@/lib/userData';
+import EditProfileDialog from '@/components/profile/EditProfileDialog';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
   const [userStats, setUserStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -32,14 +34,50 @@ const Profile: React.FC = () => {
 
       // Calculate category stats
       const categoryStats = {
-        Quantitative: { completed: 0, totalScore: 0, bestScore: 0, totalQuestions: 0 },
-        Logical: { completed: 0, totalScore: 0, bestScore: 0, totalQuestions: 0 },
-        Verbal: { completed: 0, totalScore: 0, bestScore: 0, totalQuestions: 0 },
-        'General Knowledge': { completed: 0, totalScore: 0, bestScore: 0, totalQuestions: 0 }
+        'Quantitative Aptitude': { 
+          completed: 0, 
+          totalScore: 0, 
+          bestScore: 0, 
+          totalQuestions: 0,
+          description: 'Mathematics, Data Interpretation, and Problem Solving'
+        },
+        'Logical Reasoning': { 
+          completed: 0, 
+          totalScore: 0, 
+          bestScore: 0, 
+          totalQuestions: 0,
+          description: 'Daily Challenge'
+        },
+        'Verbal Reasoning': { 
+          completed: 0, 
+          totalScore: 0, 
+          bestScore: 0, 
+          totalQuestions: 0,
+          description: 'Blood Relations, Seating, Directions'
+        },
+        'AI-Powered Aptitude': { 
+          completed: 0, 
+          totalScore: 0, 
+          bestScore: 0, 
+          totalQuestions: 0,
+          description: 'Dynamic aptitude questions powered by AI'
+        }
+      };
+
+      // Map quiz topics to category names
+      const topicMapping: { [key: string]: string } = {
+        'arithmetic-1': 'Quantitative Aptitude',
+        'arithmetic-2': 'Quantitative Aptitude',
+        'number-system': 'Quantitative Aptitude',
+        'logical-reasoning': 'Logical Reasoning',
+        'verbal-reasoning': 'Verbal Reasoning',
+        'analogical-reasoning': 'Analogical Reasoning',
+        'Daily Challenge': 'Logical Reasoning',
+        'ai-aptitude': 'AI-Powered Aptitude'
       };
 
       recentQuizzes.forEach(quiz => {
-        const category = quiz.topic;
+        const category = topicMapping[quiz.topic] || quiz.topic;
         if (categoryStats[category]) {
           categoryStats[category].completed++;
           categoryStats[category].totalScore += quiz.score;
@@ -85,6 +123,7 @@ const Profile: React.FC = () => {
       // Format category stats
       const formattedCategoryStats = Object.entries(categoryStats).map(([name, stats]) => ({
         name,
+        description: stats.description,
         completed: stats.completed,
         accuracy: stats.completed > 0 ? Math.round((stats.totalScore / stats.totalQuestions) * 100) : 0,
         bestScore: stats.bestScore
@@ -120,6 +159,11 @@ const Profile: React.FC = () => {
     return 'Expert';
   };
 
+  const getDisplayName = () => {
+    if (!user) return '';
+    return userStats?.username || user.email?.split('@')[0] || '';
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -148,7 +192,10 @@ const Profile: React.FC = () => {
             <h1 className="text-3xl font-bold text-white mb-2">Profile</h1>
             <p className="text-gray-400">Manage your account and track your progress</p>
           </div>
-          <Button className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700">
+          <Button 
+            className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
+            onClick={() => setIsEditDialogOpen(true)}
+          >
             <Edit className="w-4 h-4 mr-2" />
             Edit Profile
           </Button>
@@ -162,13 +209,13 @@ const Profile: React.FC = () => {
                 <div className="flex flex-col items-center text-center space-y-4">
                   <Avatar className="w-24 h-24">
                     <AvatarFallback className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white text-2xl">
-                      {user?.email?.charAt(0).toUpperCase()}
+                      {getDisplayName().charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   
                   <div>
                     <h2 className="text-2xl font-bold text-white">
-                      {user?.email?.split('@')[0]}
+                      {getDisplayName()}
                     </h2>
                     <p className="text-gray-400">{user?.email}</p>
                   </div>
@@ -209,7 +256,7 @@ const Profile: React.FC = () => {
                   <Target className="w-5 h-5 text-green-400" />
                   <div>
                     <div className="text-white font-semibold">Accuracy</div>
-                    <div className="text-gray-400">{userStats.accuracy}%</div>
+                    <div className="text-gray-400">{userStats.accuracy.toFixed(1)}%</div>
                   </div>
                 </div>
                 
@@ -251,7 +298,7 @@ const Profile: React.FC = () => {
                     <div className="text-sm text-gray-400">Best Streak</div>
                   </div>
                   <div className="text-center p-4 bg-gray-700/30 rounded-lg">
-                    <div className="text-2xl font-bold text-yellow-400">{userStats.accuracy}%</div>
+                    <div className="text-2xl font-bold text-yellow-400">{userStats.accuracy.toFixed(1)}%</div>
                     <div className="text-sm text-gray-400">Avg Accuracy</div>
                   </div>
                 </div>
@@ -271,7 +318,10 @@ const Profile: React.FC = () => {
                   {userStats.categoryStats.map((category) => (
                     <div key={category.name} className="p-4 bg-gray-700/30 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-white">{category.name}</h3>
+                        <div>
+                          <h3 className="font-semibold text-white">{category.name}</h3>
+                          <p className="text-sm text-gray-400">{category.description}</p>
+                        </div>
                         <span className="text-sm text-gray-400">{category.completed} completed</span>
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm">
@@ -344,6 +394,12 @@ const Profile: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <EditProfileDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        currentUsername={getDisplayName()}
+      />
     </Layout>
   );
 };

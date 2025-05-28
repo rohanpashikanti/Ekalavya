@@ -23,13 +23,14 @@ interface QuizTakingProps {
   questions: Question[];
   topic: string;
   onComplete: (score: number, timeTaken: number) => void;
+  timeLimit?: number;
 }
 
-const QuizTaking: React.FC<QuizTakingProps> = ({ quizId, questions, topic, onComplete }) => {
+const QuizTaking: React.FC<QuizTakingProps> = ({ quizId, questions, topic, onComplete, timeLimit }) => {
   const { user } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<string[]>(Array(questions.length).fill(''));
-  const [timeLeft, setTimeLeft] = useState<number>(topic === 'daily-challenge' ? 50 * 60 : 40 * 60); // 50 minutes for daily challenge, 40 for regular quizzes
+  const [timeLeft, setTimeLeft] = useState<number>(timeLimit || (topic === 'daily-challenge' ? 50 * 60 : 40 * 60));
   const [startTime] = useState(Date.now());
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 

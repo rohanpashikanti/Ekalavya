@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Layout from '../components/layout/Layout';
 import QuizTaking from '../components/quiz/QuizTaking';
 import QuizResults from '../components/quiz/QuizResults';
+import DailyQuiz from '../components/quiz/DailyQuiz';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,12 +44,12 @@ const Quiz: React.FC = () => {
       difficulty: 'Beginner'
     },
     {
-      id: 'general',
-      name: 'General Knowledge',
-      icon: Globe,
-      color: 'from-orange-500 to-red-500',
-      description: 'Current Affairs, History, Science, Geography',
-      difficulty: 'Intermediate'
+      id: 'ai-aptitude',
+      name: 'AI-Powered Aptitude',
+      icon: Brain,
+      color: 'from-indigo-500 to-purple-500',
+      description: 'Dynamic aptitude questions powered by AI',
+      difficulty: 'Adaptive'
     }
   ];
 
@@ -245,141 +246,80 @@ const Quiz: React.FC = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/dashboard'}
+              className="mb-4 border-gray-600 text-gray-200 hover:bg-gray-700"
+            >
+              ← Back to Dashboard
+            </Button>
             <h1 className="text-3xl font-bold text-white mb-2">Choose Your Quiz</h1>
             <p className="text-gray-400">Select a category to test your aptitude</p>
           </div>
         </div>
 
-        {/* Daily Challenge */}
-        <Card className="bg-gradient-to-r from-cyan-600/20 to-purple-600/20 border-cyan-500/30">
-          <CardHeader>
-            <div className="flex items-center justify-between">
+        <Card className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 transition-all duration-300">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
-                <CardTitle className="text-white text-xl">Daily Challenge</CardTitle>
-                <CardDescription className="text-cyan-200">
-                  Mixed questions from all categories
-                </CardDescription>
-              </div>
-              <Badge className="bg-yellow-500 text-black">Today's Special</Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6 text-white">
-                <div className="flex items-center gap-2">
-                  <Brain className="w-4 h-4" />
-                  <span>25 Questions</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  <span>50 Minutes</span>
+                <h2 className="text-2xl font-bold text-white mb-2">Daily Challenge</h2>
+                <p className="text-white/90">Test your skills with a comprehensive quiz covering various aptitude topics</p>
+                <div className="flex items-center gap-4 mt-2 text-white/90">
+                  <div className="flex items-center gap-2">
+                    <Brain className="w-4 h-4" />
+                    <span>25 questions</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    <span>50 minutes</span>
+                  </div>
                 </div>
               </div>
-              <Button 
-                onClick={() => startQuiz('daily-challenge', 'mixed', 'exam')}
-                disabled={loading}
-                className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
+              <Button
+                onClick={() => window.location.href = '/exam/daily-challenge'}
+                className="w-full md:w-auto bg-white text-cyan-600 hover:bg-white/90"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 Start Daily Challenge
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Category Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {quizCategories.map((category) => {
-            const IconComponent = category.icon;
-            const hasSpecificTopics = specificTopics[category.id as keyof typeof specificTopics];
-            
-            return (
-              <Card key={category.id} className="bg-gray-800/50 border-gray-700 hover:border-gray-600 transition-all duration-300 group">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${category.color} flex items-center justify-center`}>
-                      <IconComponent className="w-6 h-6 text-white" />
-                    </div>
-                    <Badge 
-                      variant="outline" 
-                      className={`${
-                        category.difficulty === 'Beginner' ? 'border-green-500 text-green-400' :
-                        category.difficulty === 'Intermediate' ? 'border-yellow-500 text-yellow-400' :
-                        'border-red-500 text-red-400'
-                      }`}
-                    >
-                      {category.difficulty}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-white group-hover:text-cyan-400 transition-colors">
-                    {category.name}
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    {category.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm text-gray-400">
-                      <div className="flex items-center gap-2">
-                        <Brain className="w-4 h-4" />
-                        <span>20 questions</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        <span>40 minutes</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      {hasSpecificTopics ? (
-                        <Button 
-                          onClick={() => setSelectedCategory(category.id)}
-                          className="flex-1 bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-white"
-                        >
-                          View Topics
-                        </Button>
-                      ) : (
-                        <Button 
-                          onClick={() => startQuiz(category.id, category.difficulty.toLowerCase())}
-                          disabled={loading}
-                          className="flex-1 bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-white"
-                        >
-                          {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                          Start Quiz
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
 
-        {/* Quick Practice */}
-        <Card className="bg-gray-800/50 border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-white">Quick Practice</CardTitle>
-            <CardDescription className="text-gray-400">
-              Short 10-question practice sessions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {quizCategories.map((category) => (
-                <Button
-                  key={category.id}
-                  variant="outline"
-                  onClick={() => startQuiz(category.id, 'easy', 'practice')}
-                  disabled={loading}
-                  className="border-gray-600 text-gray-200 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
-                >
-                  {category.name.split(' ')[0]} - Quick
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Regular Quiz Categories */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {quizCategories.map((category) => (
+            <Card
+              key={category.id}
+              className="bg-gray-800/50 border-gray-700 hover:border-gray-600 transition-all duration-300 cursor-pointer"
+              onClick={() => setSelectedCategory(category.id)}
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white">{category.name}</CardTitle>
+                  <Badge variant="secondary" className="bg-blue-500/20 text-blue-400">
+                    {category.difficulty}
+                  </Badge>
+                </div>
+                <CardDescription className="text-gray-400">
+                  {category.description}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between text-sm text-gray-400">
+                  <div className="flex items-center gap-2">
+                    <Brain className="w-4 h-4" />
+                    <span>20 questions</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    <span>40 minutes</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </Layout>
   );

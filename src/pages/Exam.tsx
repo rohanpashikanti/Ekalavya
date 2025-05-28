@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import ExamPage from '../components/exam/ExamPage';
+import DailyChallengeExam from '../components/exam/DailyChallengeExam';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData, saveUserData } from '@/lib/userData';
 
@@ -27,6 +28,11 @@ const topics = {
   'analogical-reasoning': {
     name: 'Analogical Reasoning',
     description: 'Analogy, Series, Syllogisms'
+  },
+  // Daily Challenge
+  'daily-challenge': {
+    name: 'Daily Challenge',
+    description: 'A comprehensive test covering various aptitude topics including Arithmetic, Logical Reasoning, and more.'
   }
 };
 
@@ -55,7 +61,7 @@ const Exam: React.FC = () => {
       const newAvgScore = newTotalScore / newTotalQuizzes;
       const newAvgTime = ((userData.avgTime * userData.totalQuizzes) + timeTaken) / newTotalQuizzes;
       const newBestScore = Math.max(userData.bestScore, score);
-      const newAccuracy = ((userData.accuracy * userData.totalQuizzes) + (score / 20)) / newTotalQuizzes;
+      const newAccuracy = ((userData.accuracy * userData.totalQuizzes) + (score / (topicId === 'daily-challenge' ? 25 : 20))) / newTotalQuizzes;
 
       // Update weekly progress
       const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
@@ -66,7 +72,7 @@ const Exam: React.FC = () => {
       let newBestStreak = userData.bestStreak;
       
       // Check if the last quiz was yesterday
-      const lastQuizDate = userData.quizHistory[0]?.date;
+      const lastQuizDate = userData.lastQuizDate;
       if (lastQuizDate) {
         const lastDate = new Date(lastQuizDate);
         const today = new Date();
@@ -87,14 +93,15 @@ const Exam: React.FC = () => {
       const newQuizEntry = {
         topic: topic.name,
         score,
-        total: 20,
+        total: topicId === 'daily-challenge' ? 25 : 20,
         timeTaken,
         date: new Date().toISOString(),
         questions: questions.map(q => ({
           question: q.question,
           userAnswer: q.userAnswer,
           correctAnswer: q.correctAnswer,
-          markedForReview: q.markedForReview
+          markedForReview: q.markedForReview,
+          topic: q.topic
         }))
       };
 
@@ -110,6 +117,7 @@ const Exam: React.FC = () => {
         bestStreak: newBestStreak,
         accuracy: newAccuracy,
         weeklyProgress: newWeeklyProgress,
+        lastQuizDate: new Date().toISOString(),
         quizHistory: [newQuizEntry, ...userData.quizHistory]
       };
 
@@ -126,11 +134,15 @@ const Exam: React.FC = () => {
 
   return (
     <Layout>
-      <ExamPage
-        topic={topic.name}
-        description={topic.description}
-        onComplete={handleExamComplete}
-      />
+      {topicId === 'daily-challenge' ? (
+        <DailyChallengeExam onComplete={handleExamComplete} />
+      ) : (
+        <ExamPage
+          topic={topic.name}
+          description={topic.description}
+          onComplete={handleExamComplete}
+        />
+      )}
     </Layout>
   );
 };

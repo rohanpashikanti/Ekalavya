@@ -1,4 +1,4 @@
-interface UserData {
+export interface UserData {
   totalQuizzes: number;
   totalScore: number;
   avgScore: number;
@@ -7,6 +7,8 @@ interface UserData {
   currentStreak: number;
   bestStreak: number;
   accuracy: number;
+  username: string;
+  lastQuizDate: string;
   weeklyProgress: {
     monday: boolean;
     tuesday: boolean;
@@ -42,6 +44,8 @@ export const getUserData = (userId: string): UserData => {
     currentStreak: 0,
     bestStreak: 0,
     accuracy: 0,
+    username: '',
+    lastQuizDate: '',
     weeklyProgress: {
       monday: false,
       tuesday: false,

@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -71,6 +70,7 @@ export default {
 			},
 			fontFamily: {
 				'orbitron': ['Orbitron', 'monospace'],
+				'sans': ['Noto Sans', 'sans-serif'],
 			},
 			keyframes: {
 				'accordion-down': {

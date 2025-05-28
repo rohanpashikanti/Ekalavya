@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, RefreshCw, Bookmark, BookmarkCheck } from 'lucide-react';
+import EndTestDialog from './exam/EndTestDialog';
 
 interface Question {
   question: string;
@@ -40,6 +41,7 @@ const AptitudeTest = () => {
   const [selectedTopic, setSelectedTopic] = useState(TOPICS[0]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [score, setScore] = useState(0);
+  const [showEndDialog, setShowEndDialog] = useState(false);
 
   const genAI = new GoogleGenerativeAI('AIzaSyDSNKVFGhfCCX6Onx5b8NEyk38qTH-YRXg');
 
@@ -139,8 +141,13 @@ const AptitudeTest = () => {
   const handleNav = (idx: number) => setCurrentQuestion(idx);
 
   const handleEndTest = () => {
+    setShowEndDialog(true);
+  };
+
+  const handleConfirmEndTest = () => {
     setShowResults(true);
     clearInterval(timerRef.current!);
+    setShowEndDialog(false);
   };
 
   const handleStartExam = async () => {
@@ -163,27 +170,40 @@ const AptitudeTest = () => {
   // Start screen
   if (!examStarted) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <Card className="w-full max-w-md p-6">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <Card className="w-full max-w-md p-6 bg-gray-800/50 backdrop-blur-lg border border-gray-700">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold mb-4">Start Aptitude Exam</CardTitle>
+            <div className="flex flex-col space-y-4">
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = '/quiz'}
+                className="w-fit border-gray-600 text-gray-200 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
+              >
+                ← Back to Quiz
+              </Button>
+              <CardTitle className="text-2xl font-bold text-white">Start Aptitude Exam</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
-              <label className="block mb-2 font-medium">Select Topic</label>
+              <label className="block mb-2 font-medium text-gray-200">Select Topic</label>
               <select
-                className="w-full border rounded p-2 text-black" // always black font
+                className="w-full border rounded p-2 bg-gray-700 border-gray-600 text-gray-200"
                 value={selectedTopic}
                 onChange={e => setSelectedTopic(e.target.value)}
-                style={{ color: 'black' }}
               >
                 {TOPICS.map(topic => (
-                  <option key={topic} value={topic} style={{ color: 'black' }}>{topic}</option>
+                  <option key={topic} value={topic}>{topic}</option>
                 ))}
               </select>
             </div>
-            <div className="mb-4 text-gray-600">You will get 20 MCQ questions and 40 minutes to complete the test.</div>
-            <Button className="w-full" onClick={handleStartExam}>Start Exam</Button>
+            <div className="mb-4 text-gray-400">You will get 20 MCQ questions and 40 minutes to complete the test.</div>
+            <Button 
+              className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
+              onClick={handleStartExam}
+            >
+              Start Exam
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -278,7 +298,7 @@ const AptitudeTest = () => {
         <div className="flex items-center justify-between border-b px-8 py-4 bg-gray-50">
           <div className="font-bold text-lg">Q.{currentQuestion + 1}</div>
           <div className="flex items-center gap-4">
-            <span className="bg-gray-200 px-3 py-1 rounded text-sm">MCQ</span>
+            <span className="bg-gray-200 px-3 py-1 rounded text-sm text-black">MCQ</span>
             <span className="bg-purple-100 px-3 py-1 rounded text-purple-700 font-semibold">{min}:{sec}</span>
             <Button variant="destructive" onClick={handleEndTest}>End Test</Button>
           </div>
@@ -331,6 +351,13 @@ const AptitudeTest = () => {
           </div>
         </div>
       </div>
+      <EndTestDialog
+        isOpen={showEndDialog}
+        onClose={() => setShowEndDialog(false)}
+        onConfirm={handleConfirmEndTest}
+        attemptedQuestions={questions.filter(q => q.userAnswer).length}
+        totalQuestions={questions.length}
+      />
     </div>
   );
 };

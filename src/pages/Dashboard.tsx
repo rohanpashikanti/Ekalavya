@@ -45,16 +45,6 @@ const Dashboard: React.FC = () => {
       timeLimit: '35 mins'
     },
     {
-      id: 'general',
-      name: 'General Knowledge',
-      icon: Calendar,
-      color: 'from-orange-500 to-red-500',
-      description: 'Current Affairs, History, Science, Geography',
-      difficulty: 'Intermediate',
-      questions: 15,
-      timeLimit: '20 mins'
-    },
-    {
       id: 'ai-aptitude',
       name: 'AI-Powered Aptitude',
       icon: Brain,
@@ -74,7 +64,7 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">
-                Welcome back, {user?.email?.split('@')[0]}!
+                Welcome back, {userData?.username || user?.email?.split('@')[0]}!
               </h1>
               <p className="text-blue-100 text-lg">
                 Ready to challenge your mind today?
@@ -138,7 +128,7 @@ const Dashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">Mixed Aptitude Quiz</h3>
-                <p className="text-gray-400">25 questions • 30 minutes • All categories</p>
+                <p className="text-gray-400">25 questions • 50 minutes • All categories</p>
               </div>
               <Button 
                 asChild

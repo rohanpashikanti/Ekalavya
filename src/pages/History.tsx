@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { getUserData, getRecentQuizzes } from '@/lib/userData';
 import { useAuth } from '@/contexts/AuthContext';
-import { Clock, Brain, Target, Trophy } from 'lucide-react';
+import { Clock, Brain, Target, Trophy, Calendar } from 'lucide-react';
 import './History.css';
 
 const History: React.FC = () => {
@@ -13,6 +13,10 @@ const History: React.FC = () => {
   const navigate = useNavigate();
   const userData = user ? getUserData(user.id) : null;
   const recentQuizzes = user ? getRecentQuizzes(user.id) : [];
+
+  // Separate daily quizzes from regular quizzes
+  const dailyQuizzes = recentQuizzes.filter(quiz => quiz.topic === 'Daily Challenge');
+  const regularQuizzes = recentQuizzes.filter(quiz => quiz.topic !== 'Daily Challenge');
 
   if (!user || !userData) {
     return (
@@ -35,7 +39,7 @@ const History: React.FC = () => {
         
         <div className="space-y-6">
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <Card className="bg-gray-800/50 border-gray-700">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-400">Total Quizzes</CardTitle>
@@ -75,18 +79,57 @@ const History: React.FC = () => {
                 <div className="text-2xl font-bold text-white">{userData.bestScore}/20</div>
               </CardContent>
             </Card>
+
+            <Card className="bg-gray-800/50 border-gray-700">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-gray-400">Daily Challenges</CardTitle>
+                <Calendar className="h-4 w-4 text-gray-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-white">{dailyQuizzes.length}</div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Quiz History */}
+          {/* Daily Challenge History */}
+          {dailyQuizzes.length > 0 && (
+            <Card className="bg-gray-800/50 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-xl font-bold text-white">Daily Challenge History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                  <div className="space-y-4">
+                    {dailyQuizzes.map((quiz, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
+                        <div>
+                          <h3 className="font-medium text-white">Daily Challenge</h3>
+                          <p className="text-sm text-gray-400">
+                            {new Date(quiz.date).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-medium text-white">{quiz.score}/25</div>
+                          <div className="text-sm text-gray-400">{Math.round(quiz.timeTaken / 60)}m</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Regular Quiz History */}
           <Card className="bg-gray-800/50 border-gray-700">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-white">Quiz History</CardTitle>
+              <CardTitle className="text-xl font-bold text-white">Regular Quiz History</CardTitle>
             </CardHeader>
             <CardContent>
-              {recentQuizzes.length > 0 ? (
-                <div className="max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+              {regularQuizzes.length > 0 ? (
+                <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                   <div className="space-y-4">
-                    {recentQuizzes.map((quiz, index) => (
+                    {regularQuizzes.map((quiz, index) => (
                       <div key={index} className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
                         <div>
                           <h3 className="font-medium text-white">{quiz.topic}</h3>

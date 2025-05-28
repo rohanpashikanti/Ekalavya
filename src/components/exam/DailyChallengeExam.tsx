@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -13,17 +13,48 @@ interface Question {
   type: 'mcq';
   userAnswer?: string;
   markedForReview?: boolean;
+  topic: string;
 }
 
-interface ExamPageProps {
-  topic: string;
-  description: string;
+interface DailyChallengeExamProps {
   onComplete: (score: number, timeTaken: number, questions: Question[]) => void;
 }
 
-const TOTAL_TIME = 40 * 60; // 40 minutes in seconds
+const TOTAL_TIME = 50 * 60; // 50 minutes in seconds
+const TOTAL_QUESTIONS = 25;
 
-const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) => {
+const TOPICS = {
+  ARITHMETIC: [
+    'Percentages',
+    'Profit & Loss',
+    'Averages',
+    'Ratio and Proportion',
+    'Time and Work',
+    'Pipes and Cisterns'
+  ],
+  TIME_SPEED_DISTANCE: [
+    'Trains',
+    'Boats and Streams',
+    'Simple and Compound Interest'
+  ],
+  LOGICAL_REASONING: [
+    'Directions and Distances',
+    'Blood Relations',
+    'Seating Arrangements',
+    'Syllogisms',
+    'Analogy and Classification'
+  ],
+  ANALYTICAL_REASONING: [
+    'Number Series'
+  ],
+  CODING_DECODING: [
+    'Letter Coding',
+    'Number Coding',
+    'Letter and Number Mixed Coding'
+  ]
+};
+
+const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -43,41 +74,31 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
     try {
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
       
-      let prompt = '';
-      if (topic === 'Verbal Reasoning') {
-        prompt = `Generate 20 medium to hard level multiple choice questions about Verbal Reasoning covering Blood Relations, Seating Arrangements, and Directions. 
-        Each question should have 4 options and one correct answer.
-        Format each question as a JSON object with:
-        {
-          "question": "question text",
-          "options": ["option1", "option2", "option3", "option4"],
-          "correctAnswer": "correct option text",
-          "type": "mcq"
-        }
-        Return ONLY a valid JSON array of these objects, no other text.`;
-      } else if (topic === 'Analogical Reasoning') {
-        prompt = `Generate 20 medium to hard level multiple choice questions about Analogical Reasoning covering Analogies, Series Completion, and Syllogisms.
-        Each question should have 4 options and one correct answer.
-        Format each question as a JSON object with:
-        {
-          "question": "question text",
-          "options": ["option1", "option2", "option3", "option4"],
-          "correctAnswer": "correct option text",
-          "type": "mcq"
-        }
-        Return ONLY a valid JSON array of these objects, no other text.`;
-      } else {
-        prompt = `Generate 20 medium to hard level multiple choice questions about ${topic}.
-        Each question should have 4 options and one correct answer.
-        Format each question as a JSON object with:
-        {
-          "question": "question text",
-          "options": ["option1", "option2", "option3", "option4"],
-          "correctAnswer": "correct option text",
-          "type": "mcq"
-        }
-        Return ONLY a valid JSON array of these objects, no other text.`;
+      // Create a prompt that covers all topics
+      const prompt = `Generate ${TOTAL_QUESTIONS} multiple choice questions covering various aptitude topics.
+      Include questions from these categories:
+      - Arithmetic: ${TOPICS.ARITHMETIC.join(', ')}
+      - Time, Speed & Distance: ${TOPICS.TIME_SPEED_DISTANCE.join(', ')}
+      - Logical Reasoning: ${TOPICS.LOGICAL_REASONING.join(', ')}
+      - Analytical Reasoning: ${TOPICS.ANALYTICAL_REASONING.join(', ')}
+      - Coding-Decoding: ${TOPICS.CODING_DECODING.join(', ')}
+
+      Each question should:
+      - Be medium to hard difficulty
+      - Have 4 options
+      - Include the topic it belongs to
+      - Be unique and challenging
+
+      Format each question as a JSON object with:
+      {
+        "question": "question text",
+        "options": ["option1", "option2", "option3", "option4"],
+        "correctAnswer": "correct option text",
+        "type": "mcq",
+        "topic": "topic name"
       }
+
+      Return ONLY a valid JSON array of these objects, no other text.`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
@@ -90,7 +111,7 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
         const parsedQuestions = JSON.parse(cleanedText);
         
         // Validate the parsed questions
-        if (!Array.isArray(parsedQuestions) || parsedQuestions.length !== 20) {
+        if (!Array.isArray(parsedQuestions) || parsedQuestions.length !== TOTAL_QUESTIONS) {
           throw new Error('Invalid question count');
         }
         
@@ -99,7 +120,8 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
           typeof q.question === 'string' &&
           Array.isArray(q.options) && q.options.length === 4 &&
           typeof q.correctAnswer === 'string' &&
-          q.type === 'mcq'
+          q.type === 'mcq' &&
+          typeof q.topic === 'string'
         );
         
         if (!validQuestions) {
@@ -198,14 +220,19 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
       <div className="flex flex-col items-center justify-center h-screen">
         <Card className="w-full max-w-md p-6">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold mb-4">{topic} Exam</CardTitle>
+            <CardTitle className="text-2xl font-bold mb-4">Daily Challenge</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
-              <p className="text-gray-600 mb-4">{description}</p>
-              <div className="text-gray-600">You will get 20 MCQ questions and 40 minutes to complete the exam.</div>
+              <p className="text-gray-600 mb-4">Test your aptitude skills with this daily challenge covering various topics including Arithmetic, Logical Reasoning, and more.</p>
+              <div className="text-gray-600">You will get {TOTAL_QUESTIONS} MCQ questions and {TOTAL_TIME / 60} minutes to complete the exam.</div>
             </div>
-            <Button className="w-full" onClick={handleStartExam}>Start Exam</Button>
+            <Button 
+              className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
+              onClick={handleStartExam}
+            >
+              Start Daily Challenge
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -237,7 +264,7 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
     return (
       <Card className="max-w-3xl mx-auto p-6">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold mb-4">Exam Results</CardTitle>
+          <CardTitle className="text-2xl font-bold mb-4">Daily Challenge Results</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -246,7 +273,7 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
               <div key={idx} className="p-3 border rounded">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">Q.{idx + 1}</span>
-                  <span className="text-xs bg-gray-200 px-2 py-0.5 rounded">MCQ</span>
+                  <span className="text-xs bg-gray-200 px-2 py-0.5 rounded">{q.topic}</span>
                   {q.markedForReview && <BookmarkCheck className="w-4 h-4 text-purple-500" />}
                 </div>
                 <div className="text-gray-700 mb-2">{q.question}</div>
@@ -264,86 +291,101 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
   }
 
   return (
-    <div className="flex h-screen">
-      <div className="w-56 bg-white border-r flex flex-col items-center py-6">
-        <div className="mb-6 font-bold text-lg">All Questions</div>
-        <div className="grid grid-cols-4 gap-2 mb-6">
-          {questions.map((q, idx) => {
-            let color = '';
-            if (getStatus(q) === 'answered') color = 'bg-green-400 text-white';
-            else if (getStatus(q) === 'not-answered') color = 'bg-red-400 text-white';
-            else if (getStatus(q) === 'marked') color = 'bg-purple-400 text-white';
-            else if (getStatus(q) === 'answered-marked') color = 'bg-fuchsia-600 text-white';
-            return (
-              <button
-                key={idx}
-                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 ${currentQuestion === idx ? 'border-black' : 'border-transparent'} ${color}`}
-                onClick={() => handleNav(idx)}
-                title={`Q${idx + 1}`}
-              >
-                {idx + 1}
-              </button>
-            );
-          })}
-        </div>
-        <div className="mt-auto space-y-2 text-xs">
-          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-green-400 inline-block" /> Answered</div>
-          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-400 inline-block" /> Not Answered</div>
-          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-purple-400 inline-block" /> Marked for review</div>
-          <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-fuchsia-600 inline-block" /> Answered & Marked</div>
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Daily Challenge</h1>
+        <div className="text-lg font-semibold">
+          Time Left: {min}:{sec}
         </div>
       </div>
-      <div className="flex-1 flex flex-col">
-        <div className="flex items-center justify-between border-b px-8 py-4 bg-gray-50">
-          <div className="font-bold text-lg">Q.{currentQuestion + 1}</div>
-          <div className="flex items-center gap-4">
-            <span className="bg-gray-200 px-3 py-1 rounded text-sm text-black">MCQ</span>
-            <span className="bg-purple-100 px-3 py-1 rounded text-purple-700 font-semibold">{min}:{sec}</span>
-            <Button variant="destructive" onClick={handleEndTest}>End Test</Button>
-          </div>
-        </div>
-        <div className="flex-1 flex flex-row">
-          <div className="flex-1 flex flex-col justify-center items-center px-8">
-            <div className="text-xl font-semibold mb-4">{questions[currentQuestion]?.question}</div>
-            {questions[currentQuestion]?.options && (
-              <div className="space-y-2 w-full max-w-md">
-                {questions[currentQuestion].options.map((opt, i) => (
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="md:col-span-3">
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-sm bg-gray-200 px-2 py-0.5 rounded text-black">{questions[currentQuestion]?.topic}</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleMarkForReview}
+                  className="ml-auto"
+                >
+                  {questions[currentQuestion]?.markedForReview ? (
+                    <BookmarkCheck className="w-4 h-4 text-purple-500" />
+                  ) : (
+                    <Bookmark className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
+              <div className="text-lg mb-6">
+                Q.{currentQuestion + 1}. {questions[currentQuestion]?.question}
+              </div>
+              <div className="space-y-3">
+                {questions[currentQuestion]?.options.map((option, idx) => (
                   <Button
-                    key={i}
-                    variant={questions[currentQuestion].userAnswer === opt ? 'default' : 'outline'}
-                    className="w-full text-left"
-                    onClick={() => handleMCQ(opt)}
+                    key={idx}
+                    variant={questions[currentQuestion]?.userAnswer === option ? "default" : "outline"}
+                    className="w-full justify-start"
+                    onClick={() => handleMCQ(option)}
                   >
-                    {String.fromCharCode(65 + i)}. {opt}
+                    {String.fromCharCode(65 + idx)}. {option}
                   </Button>
                 ))}
               </div>
-            )}
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={() => handleNav(currentQuestion - 1)}
+              disabled={currentQuestion === 0}
+            >
+              Previous
+            </Button>
+            <Button
+              onClick={() => handleNav(currentQuestion + 1)}
+              disabled={currentQuestion === questions.length - 1}
+            >
+              Next
+            </Button>
           </div>
-          <div className="w-80 border-l bg-gray-50 flex flex-col items-center py-8 px-4">
-            <div className="mb-4">
+        </div>
+
+        <div className="md:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle>Question Navigator</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-5 gap-2">
+                {questions.map((q, idx) => (
+                  <Button
+                    key={idx}
+                    variant="outline"
+                    size="sm"
+                    className={`w-full ${
+                      currentQuestion === idx ? 'border-2 border-primary' : ''
+                    } ${
+                      getStatus(q) === 'answered' ? 'bg-green-100 text-black' :
+                      getStatus(q) === 'marked' ? 'bg-yellow-100 text-black' :
+                      getStatus(q) === 'answered-marked' ? 'bg-purple-100 text-black' : ''
+                    }`}
+                    onClick={() => handleNav(idx)}
+                  >
+                    {idx + 1}
+                  </Button>
+                ))}
+              </div>
               <Button
-                variant={questions[currentQuestion].markedForReview ? 'default' : 'outline'}
-                onClick={toggleMarkForReview}
-                className="w-full flex items-center gap-2"
+                className="w-full mt-4"
+                onClick={handleEndTest}
               >
-                {questions[currentQuestion].markedForReview ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-                {questions[currentQuestion].markedForReview ? 'Marked for Review' : 'Mark for Review'}
+                End Test
               </Button>
-            </div>
-            <div className="flex gap-2 mt-auto">
-              <Button
-                variant="outline"
-                onClick={() => setCurrentQuestion(q => Math.max(0, q - 1))}
-                disabled={currentQuestion === 0}
-              >Previous</Button>
-              <Button
-                variant="outline"
-                onClick={() => setCurrentQuestion(q => Math.min(questions.length - 1, q + 1))}
-                disabled={currentQuestion === questions.length - 1}
-              >Next</Button>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
       <EndTestDialog
@@ -357,4 +399,4 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
   );
 };
 
-export default ExamPage; 
+export default DailyChallengeExam; 
