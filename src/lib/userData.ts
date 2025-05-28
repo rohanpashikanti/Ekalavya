@@ -76,6 +76,23 @@ export const getUserData = (userId: string): UserData => {
     if (lastWeek !== currentWeek) {
       userData.weeklyProgress = defaultData.weeklyProgress;
     }
+
+    // Check if streak should be reset (more than 1 day gap)
+    const lastDate = new Date(lastQuizDate);
+    lastDate.setHours(0, 0, 0, 0);
+    const today = new Date(now);
+    today.setHours(0, 0, 0, 0);
+    
+    const diffDays = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays > 1) {
+      // Reset streak if more than 1 day gap
+      userData.currentStreak = 0;
+    } else if (diffDays === 1) {
+      // If last quiz was yesterday, increment streak
+      userData.currentStreak++;
+      userData.bestStreak = Math.max(userData.bestStreak, userData.currentStreak);
+    }
+    // If same day, keep current streak
   }
 
   return userData;

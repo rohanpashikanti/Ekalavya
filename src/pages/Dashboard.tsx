@@ -70,12 +70,6 @@ const Dashboard: React.FC = () => {
                 Ready to challenge your mind today?
               </p>
             </div>
-            <div className="hidden md:block">
-              <div className="text-right">
-                <div className="text-3xl font-bold">{userData?.currentStreak || 0}</div>
-                <div className="text-blue-100">Day Streak</div>
-              </div>
-            </div>
           </div>
         </div>
 

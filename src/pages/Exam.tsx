@@ -77,7 +77,12 @@ const Exam: React.FC = () => {
       
       if (lastQuizDate) {
         const lastDate = new Date(lastQuizDate);
-        const diffDays = Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+        // Set both dates to midnight for accurate day comparison
+        lastDate.setHours(0, 0, 0, 0);
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
+        
+        const diffDays = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
         
         if (diffDays === 1) {
           // Consecutive day - increment streak
@@ -86,8 +91,10 @@ const Exam: React.FC = () => {
         } else if (diffDays > 1) {
           // Gap of more than one day - reset streak
           newCurrentStreak = 1;
+        } else if (diffDays === 0) {
+          // Same day - keep current streak
+          // Don't increment streak for multiple quizzes on same day
         }
-        // If same day, keep current streak
       } else {
         // First quiz - start streak
         newCurrentStreak = 1;
