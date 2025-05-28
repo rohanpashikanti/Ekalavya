@@ -91,10 +91,8 @@ const Exam: React.FC = () => {
         } else if (diffDays > 1) {
           // Gap of more than one day - reset streak
           newCurrentStreak = 1;
-        } else if (diffDays === 0) {
-          // Same day - keep current streak
-          // Don't increment streak for multiple quizzes on same day
         }
+        // If same day, keep current streak
       } else {
         // First quiz - start streak
         newCurrentStreak = 1;
