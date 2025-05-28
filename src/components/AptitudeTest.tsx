@@ -16,16 +16,34 @@ interface Question {
 }
 
 const TOPICS = [
-  'Number Series',
-  'Percentage and Ratios',
-  'Time and Work',
-  'Speed and Distance',
+  // Quantitative Aptitude
+  'Percentages',
   'Profit and Loss',
   'Averages',
+  'Ratio and Proportion',
+  'Time and Work',
+  'Pipes and Cisterns',
+  
+  // Time, Speed & Distance
+  'Trains',
+  'Boats and Streams',
+  'Time, Speed and Distance',
+  
+  // Interest
   'Simple and Compound Interest',
-  'Mixtures and Alligations',
-  'Geometry',
-  'Probability',
+  
+  // Reasoning
+  'Directions and Distances',
+  'Blood Relations',
+  'Seating Arrangements',
+  'Syllogisms',
+  'Analogy and Classification',
+  
+  // Series and Coding
+  'Number Series',
+  'Letter Coding',
+  'Number Coding',
+  'Letter and Number Mixed Coding',
 ];
 
 const TOTAL_TIME = 40 * 60; // 40 minutes in seconds
@@ -51,7 +69,7 @@ const AptitudeTest = () => {
     setError(null);
     try {
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-      const prompt = `Generate 20 MCQ aptitude test questions on the topic '${topic}'. Each question should have:\n- type: 'mcq'\n- question: string\n- options: array of 4 possible answer values (e.g., [\"10%\", \"8%\", \"12%\", \"15%\"])\n- correctAnswer: one of the options (the value, not the letter)\nRespond ONLY with a valid JSON array, no explanation, no markdown, no extra text.`;
+      const prompt = `Generate 20 MCQ aptitude test questions on the topic '${topic}'. Each question should be of medium to hard difficulty level. Each question should have:\n- type: 'mcq'\n- question: string\n- options: array of 4 possible answer values (e.g., [\"10%\", \"8%\", \"12%\", \"15%\"])\n- correctAnswer: one of the options (the value, not the letter)\nRespond ONLY with a valid JSON array, no explanation, no markdown, no extra text.`;
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
