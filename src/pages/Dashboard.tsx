@@ -1,5 +1,5 @@
-import React from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import Layout from '../components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,10 +8,27 @@ import { Progress } from '@/components/ui/progress';
 import { Brain, Target, Trophy, Calendar, TrendingUp, Star, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getUserData } from '@/lib/userData';
+import EditProfileDialog from '@/components/profile/EditProfileDialog';
+import { useToast } from '@/hooks/use-toast';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const userData = user ? getUserData(user.id) : null;
+  const { toast } = useToast();
+  const [userData, setUserData] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchUserData = () => {
+    if (user) {
+      const data = getUserData(user.uid);
+      setUserData(data);
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, [user]);
 
   const categories = [
     {
@@ -56,6 +73,22 @@ const Dashboard: React.FC = () => {
     }
   ];
 
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-gray-400">Please log in to view your dashboard.</p>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500"></div>
+      </div>
+    );
+  }
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -64,12 +97,18 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">
-                Welcome back, {userData?.username || user?.email?.split('@')[0]}!
+                Welcome back, {userData?.username || user.email?.split('@')[0]}!
               </h1>
               <p className="text-blue-100 text-lg">
                 Ready to challenge your mind today?
               </p>
             </div>
+            <Button
+              onClick={() => setIsEditDialogOpen(true)}
+              className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
+            >
+              Edit Profile
+            </Button>
           </div>
         </div>
 
@@ -226,6 +265,13 @@ const Dashboard: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      <EditProfileDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        currentUsername={userData?.username || user.email?.split('@')[0] || ''}
+        onUsernameUpdate={fetchUserData}
+      />
     </Layout>
   );
 };

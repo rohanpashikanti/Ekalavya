@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,9 +13,8 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
   
-  const { signIn, signInWithMagicLink } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -44,59 +43,6 @@ const Login: React.FC = () => {
       setLoading(false);
     }
   };
-
-  const handleMagicLink = async () => {
-    if (!email) {
-      setError('Please enter your email address');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      const { error } = await signInWithMagicLink(email);
-      if (error) {
-        setError(error.message);
-      } else {
-        setMagicLinkSent(true);
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (magicLinkSent) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-gray-800 border-gray-700">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Mail className="w-8 h-8 text-white" />
-            </div>
-            <CardTitle className="text-white text-2xl">Check Your Email</CardTitle>
-            <CardDescription className="text-gray-400">
-              We sent a magic link to {email}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-300 text-center mb-6">
-              Click the link in your email to sign in. You can close this tab.
-            </p>
-            <Button
-              onClick={() => setMagicLinkSent(false)}
-              variant="outline"
-              className="w-full border-gray-600 text-gray-200 hover:bg-gray-700"
-            >
-              Back to Login
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
@@ -161,43 +107,6 @@ const Login: React.FC = () => {
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-gray-600" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-gray-800 px-2 text-gray-400">Or</span>
-            </div>
-          </div>
-
-          <Button
-            onClick={handleMagicLink}
-            variant="outline"
-            className="w-full border-gray-600 text-gray-200 hover:bg-gray-700"
-            disabled={loading}
-          >
-            <Mail className="w-4 h-4 mr-2" />
-            Send Magic Link
-          </Button>
-
-          <div className="text-center space-y-2">
-            <Link
-              to="/forgot-password"
-              className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
-            >
-              Forgot your password?
-            </Link>
-            <p className="text-sm text-gray-400">
-              Don't have an account?{' '}
-              <Link
-                to="/register"
-                className="text-cyan-400 hover:text-cyan-300 transition-colors"
-              >
-                Sign up
-              </Link>
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>

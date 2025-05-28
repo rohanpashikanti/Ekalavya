@@ -3,8 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Brain, Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { db } from '@/integrations/firebase/client';
+import { collection, addDoc, updateDoc, doc, getDoc, query, where, getDocs } from 'firebase/firestore';
 import QuizTaking from './QuizTaking';
 import QuizResults from './QuizResults';
 
@@ -26,69 +27,98 @@ const DailyQuiz: React.FC = () => {
     return () => clearInterval(timer);
   }, [quizState, timeLeft]);
 
+  const generateQuiz = async () => {
+    if (!user) return;
+
+    // Create a new quiz document
+    const quizRef = await addDoc(collection(db, 'quizzes'), {
+      topic: 'Daily Challenge',
+      time_limit: 50 * 60,
+      question_count: 25,
+      user_id: user.uid,
+      created_at: new Date().toISOString(),
+      is_completed: false,
+      type: 'daily-challenge'
+    });
+
+    // Generate questions (you'll need to implement your question generation logic here)
+    const questions = []; // Add your question generation logic
+    for (const question of questions) {
+      await addDoc(collection(db, 'questions'), {
+        ...question,
+        quiz_id: quizRef.id
+      });
+    }
+
+    return quizRef.id;
+  };
+
   const startDailyQuiz = async () => {
     if (!user) return;
     
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-quiz', {
-        body: { 
-          topic: 'daily-challenge',
-          difficulty: 'mixed',
-          quizType: 'exam',
-          userId: user.id
-        },
-        headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
-        },
-      });
+      // Check if user already has a daily quiz for today
+      const today = new Date().toISOString().split('T')[0];
+      const quizzesRef = collection(db, 'quizzes');
+      const q = query(
+        quizzesRef,
+        where('user_id', '==', user.uid),
+        where('type', '==', 'daily-challenge'),
+        where('created_at', '>=', today)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const existingQuiz = querySnapshot.docs[0];
+        const quizData = existingQuiz.data();
+        
+        // Fetch questions for the existing quiz
+        const questionsRef = collection(db, 'questions');
+        const questionsQuery = query(questionsRef, where('quiz_id', '==', existingQuiz.id));
+        const questionsSnapshot = await getDocs(questionsQuery);
+        const questions = questionsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
 
-      if (error) {
-        console.error('Error from generate-quiz function:', error);
-        throw new Error(`Failed to generate quiz: ${error.message}`);
+        setCurrentQuiz({
+          id: existingQuiz.id,
+          ...quizData,
+          questions
+        });
+        setQuizState('taking');
+        setTimeLeft(50 * 60);
+        return;
       }
 
-      if (!data || !data.quiz_id) {
-        console.error('No quiz_id in response:', data);
-        throw new Error('Invalid response from quiz generation');
-      }
-
+      // Generate new quiz
+      const quizId = await generateQuiz();
+      
       // Fetch the complete quiz with questions
-      const { data: quiz, error: quizError } = await supabase
-        .from('quizzes')
-        .select(`
-          *,
-          questions (*)
-        `)
-        .eq('id', data.quiz_id)
-        .single();
-
-      if (quizError) {
-        console.error('Error fetching quiz:', quizError);
-        throw new Error(`Failed to fetch quiz: ${quizError.message}`);
+      const quizRef = doc(db, 'quizzes', quizId);
+      const quizDoc = await getDoc(quizRef);
+      
+      if (!quizDoc.exists()) {
+        throw new Error('Failed to create quiz');
       }
 
-      if (!quiz || !quiz.questions) {
-        console.error('Invalid quiz data:', quiz);
-        throw new Error('Quiz data is incomplete');
-      }
+      const quizData = quizDoc.data();
+      
+      // Fetch questions
+      const questionsRef = collection(db, 'questions');
+      const questionsQuery = query(questionsRef, where('quiz_id', '==', quizId));
+      const questionsSnapshot = await getDocs(questionsQuery);
+      const questions = questionsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
-      // Update quiz with daily challenge metadata
-      const { error: updateError } = await supabase
-        .from('quizzes')
-        .update({
-          topic: 'Daily Challenge',
-          time_limit: 50 * 60, // 50 minutes in seconds
-          question_count: 25
-        })
-        .eq('id', quiz.id);
-
-      if (updateError) {
-        console.error('Error updating quiz metadata:', updateError);
-        throw new Error(`Failed to update quiz metadata: ${updateError.message}`);
-      }
-
-      setCurrentQuiz(quiz);
+      setCurrentQuiz({
+        id: quizId,
+        ...quizData,
+        questions
+      });
       setQuizState('taking');
       setTimeLeft(50 * 60);
     } catch (error) {

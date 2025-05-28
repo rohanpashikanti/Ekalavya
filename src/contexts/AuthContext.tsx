@@ -1,15 +1,17 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { createClient, User, Session, AuthChangeEvent } from '@supabase/supabase-js';
-
-const supabaseUrl = 'https://lxpdgkybfpudkhyexuow.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4cGRna3liZnB1ZGtoeWV4dW93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgzMjIzNDUsImV4cCI6MjA2Mzg5ODM0NX0.J_BCXApBxuJ4KJm7_ApuV5bcxdPmUDJonR8zg9PlEj0';
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { 
+  User,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  sendSignInLinkToEmail
+} from 'firebase/auth';
+import { auth } from '@/integrations/firebase/client';
 
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
   loading: boolean;
   signUp: (email: string, password: string) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
@@ -34,74 +36,67 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Listen for auth changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
       setLoading(false);
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-
-        // Create user profile on sign up
-        if (event === 'SIGNED_UP' && session?.user) {
-          console.log('New user signed up, profile will be created automatically via trigger');
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    const result = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    return result;
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      return { data: { user: result.user }, error: null };
+    } catch (error) {
+      return { data: { user: null }, error };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    const result = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return result;
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      return { data: { user: result.user }, error: null };
+    } catch (error) {
+      return { data: { user: null }, error };
+    }
   };
 
   const signInWithMagicLink = async (email: string) => {
-    const result = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-    return result;
+    try {
+      const actionCodeSettings = {
+        url: `${window.location.origin}/dashboard`,
+        handleCodeInApp: true,
+      };
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      window.localStorage.setItem('emailForSignIn', email);
+      return { data: { user: null }, error: null };
+    } catch (error) {
+      return { data: { user: null }, error };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await firebaseSignOut(auth);
   };
 
   const resetPassword = async (email: string) => {
-    const result = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    return result;
+    try {
+      await sendPasswordResetEmail(auth, email, {
+        url: `${window.location.origin}/reset-password`,
+      });
+      return { data: { user: null }, error: null };
+    } catch (error) {
+      return { data: { user: null }, error };
+    }
   };
 
   const value = {
     user,
-    session,
     loading,
     signUp,
     signIn,

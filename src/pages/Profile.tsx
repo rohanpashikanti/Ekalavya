@@ -20,17 +20,19 @@ import {
 } from 'lucide-react';
 import { getUserData, getRecentQuizzes } from '@/lib/userData';
 import EditProfileDialog from '@/components/profile/EditProfileDialog';
+import { useToast } from '@/hooks/use-toast';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [userStats, setUserStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchUserData = () => {
     if (user) {
-      const data = getUserData(user.id);
-      const recentQuizzes = getRecentQuizzes(user.id, 100); // Get more quizzes for better stats
+      const data = getUserData(user.uid);
+      const recentQuizzes = getRecentQuizzes(user.uid, 100); // Get more quizzes for better stats
 
       // Calculate category stats
       const categoryStats = {
@@ -137,6 +139,10 @@ const Profile: React.FC = () => {
       });
     }
     setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchUserData();
   }, [user]);
 
   const getLevelProgress = () => {
@@ -399,6 +405,7 @@ const Profile: React.FC = () => {
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
         currentUsername={getDisplayName()}
+        onUsernameUpdate={fetchUserData}
       />
     </Layout>
   );

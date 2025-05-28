@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { db } from '@/integrations/firebase/client';
+import { doc, updateDoc, collection, getDoc, increment } from 'firebase/firestore';
 
 interface Question {
   id: string;
@@ -81,40 +82,45 @@ const QuizTaking: React.FC<QuizTakingProps> = ({ quizId, questions, topic, onCom
     });
 
     try {
-      // Update quiz with results
-      const { error: quizError } = await supabase
-        .from('quizzes')
-        .update({
-          score,
-          time_taken: timeTaken,
-          is_completed: true,
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', quizId);
+      if (!user) throw new Error('User not authenticated');
 
-      if (quizError) throw quizError;
+      // Update quiz with results
+      const quizRef = doc(db, 'quizzes', quizId);
+      await updateDoc(quizRef, {
+        score,
+        time_taken: timeTaken,
+        is_completed: true,
+        completed_at: new Date().toISOString(),
+      });
 
       // Update questions with user answers
       for (const question of updatedQuestions) {
-        const { error: questionError } = await supabase
-          .from('questions')
-          .update({
-            user_answer: question.user_answer,
-            is_correct: question.is_correct,
-          })
-          .eq('id', question.id);
-
-        if (questionError) console.error('Error updating question:', questionError);
+        const questionRef = doc(db, 'questions', question.id);
+        await updateDoc(questionRef, {
+          user_answer: question.user_answer,
+          is_correct: question.is_correct,
+        });
       }
 
       // Update user stats
-      const { error: statsError } = await supabase.rpc('update_user_stats', {
-        p_user_id: user?.id,
-        p_score: score,
-        p_total_questions: questions.length,
-      });
-
-      if (statsError) console.error('Error updating user stats:', statsError);
+      const userStatsRef = doc(db, 'user_stats', user.uid);
+      const userStatsDoc = await getDoc(userStatsRef);
+      
+      if (userStatsDoc.exists()) {
+        await updateDoc(userStatsRef, {
+          total_quizzes: increment(1),
+          total_score: increment(score),
+          total_questions: increment(questions.length),
+          average_score: (userStatsDoc.data().total_score + score) / (userStatsDoc.data().total_quizzes + 1),
+        });
+      } else {
+        await updateDoc(userStatsRef, {
+          total_quizzes: 1,
+          total_score: score,
+          total_questions: questions.length,
+          average_score: score,
+        });
+      }
 
       onComplete(score, timeTaken);
     } catch (error) {

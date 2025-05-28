@@ -3,18 +3,27 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData, saveUserData } from '@/lib/userData';
+import { updateProfile } from 'firebase/auth';
+import { auth } from '@/integrations/firebase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface EditProfileDialogProps {
   isOpen: boolean;
   onClose: () => void;
   currentUsername: string;
+  onUsernameUpdate: () => void;
 }
 
-const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ isOpen, onClose, currentUsername }) => {
+const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ 
+  isOpen, 
+  onClose, 
+  currentUsername,
+  onUsernameUpdate 
+}) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [username, setUsername] = useState(currentUsername);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,29 +32,43 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ isOpen, onClose, 
     e.preventDefault();
     if (!user) return;
 
+    if (!username.trim()) {
+      setError('Username cannot be empty');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
       // Update username in user data
-      const userData = getUserData(user.id);
+      const userData = getUserData(user.uid);
       const updatedUserData = {
         ...userData,
-        username
+        username: username.trim()
       };
-      saveUserData(user.id, updatedUserData);
+      saveUserData(user.uid, updatedUserData);
 
-      // Update username in Supabase auth metadata
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { username }
+      // Update username in Firebase auth profile
+      await updateProfile(auth.currentUser!, {
+        displayName: username.trim()
       });
 
-      if (updateError) throw updateError;
+      toast({
+        title: "Profile updated",
+        description: "Your username has been successfully updated.",
+      });
 
+      onUsernameUpdate(); // Trigger refresh in parent component
       onClose();
     } catch (error) {
       console.error('Error updating profile:', error);
       setError('Failed to update profile. Please try again.');
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

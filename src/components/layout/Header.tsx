@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData } from '@/lib/userData';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,18 @@ import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
   const { user, signOut } = useAuth();
-  const userData = user ? getUserData(user.id) : null;
+  const [userData, setUserData] = useState<any>(null);
+
+  const fetchUserData = () => {
+    if (user) {
+      const data = getUserData(user.uid);
+      setUserData(data);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
