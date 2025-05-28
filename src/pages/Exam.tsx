@@ -94,6 +94,9 @@ const Exam: React.FC = () => {
         newBestStreak = 1;
       }
 
+      // Calculate weekly progress count
+      const weeklyProgressCount = Object.values(newWeeklyProgress).filter(Boolean).length;
+
       // Create new quiz entry
       const newQuizEntry = {
         topic: topic.name,
@@ -129,10 +132,8 @@ const Exam: React.FC = () => {
       // Save updated data
       saveUserData(user.id, updatedUserData);
 
-      // Show success message with streak info
-      const streakMessage = newCurrentStreak > 1 
-        ? `Exam results saved! Your streak is now ${newCurrentStreak} days!`
-        : 'Exam results saved successfully!';
+      // Show success message with streak and weekly progress info
+      const streakMessage = `Exam results saved! Your streak is now ${newCurrentStreak} days and weekly progress is ${weeklyProgressCount}/7.`;
       alert(streakMessage);
     } catch (error) {
       console.error('Error saving exam results:', error);
