@@ -35,7 +35,7 @@ export interface UserData {
 
 export const getUserData = (userId: string): UserData => {
   const userKey = `user_${userId}`;
-  return JSON.parse(localStorage.getItem(userKey) || JSON.stringify({
+  const defaultData = {
     totalQuizzes: 0,
     totalScore: 0,
     avgScore: 0,
@@ -56,7 +56,44 @@ export const getUserData = (userId: string): UserData => {
       sunday: false
     },
     quizHistory: []
-  }));
+  };
+
+  const storedData = localStorage.getItem(userKey);
+  if (!storedData) {
+    return defaultData;
+  }
+
+  const userData = JSON.parse(storedData);
+
+  // Reset weekly progress if it's a new week
+  const now = new Date();
+  const lastQuizDate = userData.lastQuizDate ? new Date(userData.lastQuizDate) : null;
+  
+  if (lastQuizDate) {
+    const lastWeek = lastQuizDate.getWeek();
+    const currentWeek = now.getWeek();
+    
+    if (lastWeek !== currentWeek) {
+      userData.weeklyProgress = defaultData.weeklyProgress;
+    }
+  }
+
+  return userData;
+};
+
+// Add getWeek method to Date prototype
+declare global {
+  interface Date {
+    getWeek(): number;
+  }
+}
+
+Date.prototype.getWeek = function() {
+  const d = new Date(Date.UTC(this.getFullYear(), this.getMonth(), this.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
 };
 
 export const saveUserData = (userId: string, data: UserData): void => {
@@ -66,8 +103,7 @@ export const saveUserData = (userId: string, data: UserData): void => {
 
 export const getWeeklyProgress = (userId: string): number => {
   const userData = getUserData(userId);
-  const progress = userData.weeklyProgress;
-  return Object.values(progress).filter(Boolean).length;
+  return Object.values(userData.weeklyProgress).filter(Boolean).length;
 };
 
 export const getRecentQuizzes = (userId: string, limit: number = 5) => {
