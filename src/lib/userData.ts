@@ -34,7 +34,10 @@ export interface UserData {
 }
 
 export const getUserData = (userId: string): UserData => {
+  console.log('Getting user data for ID:', userId);
   const userKey = `user_${userId}`;
+  console.log('Using localStorage key:', userKey);
+  
   const defaultData = {
     totalQuizzes: 0,
     totalScore: 0,
@@ -59,60 +62,106 @@ export const getUserData = (userId: string): UserData => {
   };
 
   const storedData = localStorage.getItem(userKey);
+  console.log('Stored data:', storedData);
+  
   if (!storedData) {
+    console.log('No stored data found, returning default data');
     return defaultData;
   }
 
   const userData = JSON.parse(storedData);
+  console.log('Parsed user data:', userData);
 
-  // Reset weekly progress if it's a new week
-  const now = new Date();
-  const lastQuizDate = userData.lastQuizDate ? new Date(userData.lastQuizDate) : null;
-  
-  if (lastQuizDate) {
-    const lastWeek = lastQuizDate.getWeek();
-    const currentWeek = now.getWeek();
-    
-    if (lastWeek !== currentWeek) {
-      // Reset weekly progress for new week
-      userData.weeklyProgress = defaultData.weeklyProgress;
-      
-      // Check if streak should be maintained across weeks
-      const lastDate = new Date(lastQuizDate);
-      lastDate.setHours(0, 0, 0, 0);
-      const today = new Date(now);
-      today.setHours(0, 0, 0, 0);
-      
-      const diffDays = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays > 1) {
-        // Reset streak if more than 1 day gap
-        userData.currentStreak = 0;
+  // Calculate statistics from quiz history
+  if (userData.quizHistory && userData.quizHistory.length > 0) {
+    console.log('Calculating statistics from quiz history');
+    const totalQuizzes = userData.quizHistory.length;
+    const totalScore = userData.quizHistory.reduce((sum: number, quiz: any) => sum + quiz.score, 0);
+    const totalQuestions = userData.quizHistory.reduce((sum: number, quiz: any) => sum + quiz.total, 0);
+    const totalTime = userData.quizHistory.reduce((sum: number, quiz: any) => sum + quiz.timeTaken, 0);
+    const bestScore = Math.max(...userData.quizHistory.map((quiz: any) => quiz.score));
+
+    // Update user data with calculated statistics
+    userData.totalQuizzes = totalQuizzes;
+    userData.totalScore = totalScore;
+    userData.avgScore = totalQuizzes > 0 ? (totalScore / totalQuestions) * 100 : 0;
+    userData.avgTime = totalQuizzes > 0 ? totalTime / totalQuizzes : 0;
+    userData.bestScore = bestScore;
+    userData.accuracy = totalQuizzes > 0 ? (totalScore / totalQuestions) * 100 : 0;
+
+    // Calculate streak
+    const sortedQuizzes = [...userData.quizHistory].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    let currentStreak = 0;
+    let bestStreak = userData.bestStreak || 0;
+    let lastDate = null;
+
+    for (const quiz of sortedQuizzes) {
+      const quizDate = new Date(quiz.date);
+      quizDate.setHours(0, 0, 0, 0);
+
+      if (!lastDate) {
+        currentStreak = 1;
+        lastDate = quizDate;
+        continue;
       }
-    } else {
-      // Same week - check daily streak
-      const lastDate = new Date(lastQuizDate);
-      lastDate.setHours(0, 0, 0, 0);
-      const today = new Date(now);
-      today.setHours(0, 0, 0, 0);
+
+      const diffDays = Math.floor((lastDate.getTime() - quizDate.getTime()) / (1000 * 60 * 60 * 24));
       
-      const diffDays = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays > 1) {
-        // Reset streak if more than 1 day gap
-        userData.currentStreak = 0;
+      if (diffDays === 1) {
+        currentStreak++;
+        bestStreak = Math.max(bestStreak, currentStreak);
+      } else if (diffDays > 1) {
+        break;
+      }
+      
+      lastDate = quizDate;
+    }
+
+    userData.currentStreak = currentStreak;
+    userData.bestStreak = bestStreak;
+
+    // Update weekly progress
+    const today = new Date();
+    const currentDay = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    
+    // Check if we need to reset weekly progress (new week)
+    const lastQuizDate = userData.lastQuizDate ? new Date(userData.lastQuizDate) : null;
+    if (lastQuizDate) {
+      const lastWeek = lastQuizDate.getWeek();
+      const currentWeek = today.getWeek();
+      
+      if (lastWeek !== currentWeek) {
+        userData.weeklyProgress = defaultData.weeklyProgress;
       }
     }
+
+    // Update current day's progress
+    if (userData.quizHistory.some((quiz: any) => {
+      const quizDate = new Date(quiz.date);
+      return quizDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase() === currentDay;
+    })) {
+      userData.weeklyProgress[currentDay] = true;
+    }
+
+    // Save the updated data back to localStorage
+    saveUserData(userId, userData);
+    console.log('Updated and saved user data:', userData);
   }
 
   return userData;
 };
 
-// Add getWeek method to Date prototype
+// Add TypeScript declaration for getWeek method
 declare global {
   interface Date {
     getWeek(): number;
   }
 }
 
+// Add helper function to get week number
 Date.prototype.getWeek = function() {
   const d = new Date(Date.UTC(this.getFullYear(), this.getMonth(), this.getDate()));
   const dayNum = d.getUTCDay() || 7;

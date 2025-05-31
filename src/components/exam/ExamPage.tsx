@@ -195,19 +195,30 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
 
   if (!examStarted) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <Card className="w-full max-w-md p-6">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold mb-4">{topic} Exam</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <p className="text-gray-600 mb-4">{description}</p>
-              <div className="text-gray-600">You will get 20 MCQ questions and 40 minutes to complete the exam.</div>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="w-full max-w-md">
+          <button
+            className="mb-4 category-btn"
+            onClick={() => window.history.back()}
+          >
+            ← Back to Quiz
+          </button>
+          <div className="rounded-card soft-shadow p-8 flex flex-col gap-4 card-media">
+            <div className="heading-hero mb-2">{topic} Exam</div>
+            <div className="text-2xl font-medium mb-4" style={{ color: '#5C5C5C' }}>
+              This exam covers:
+              <ul className="list-disc ml-6 mt-2 text-base">
+                {description.split(',').map((desc, i) => (
+                  <li key={i}>{desc.trim()}</li>
+                ))}
+              </ul>
             </div>
-            <Button className="w-full" onClick={handleStartExam}>Start Exam</Button>
-          </CardContent>
-        </Card>
+            <div className="text-base mb-4" style={{ color: '#5C5C5C' }}>
+              You will get 20 MCQ questions and 40 minutes to complete the test.
+            </div>
+            <button className="category-btn active w-full" onClick={handleStartExam}>Start Exam</button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -308,14 +319,14 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
             {questions[currentQuestion]?.options && (
               <div className="space-y-2 w-full max-w-md">
                 {questions[currentQuestion].options.map((opt, i) => (
-                  <Button
+                  <button
                     key={i}
-                    variant={questions[currentQuestion].userAnswer === opt ? 'default' : 'outline'}
-                    className="w-full text-left"
+                    className={`option-btn${questions[currentQuestion].userAnswer === opt ? ' selected' : ''}`}
                     onClick={() => handleMCQ(opt)}
+                    type="button"
                   >
                     {String.fromCharCode(65 + i)}. {opt}
-                  </Button>
+                  </button>
                 ))}
               </div>
             )}

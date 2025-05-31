@@ -114,7 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
         return { error: 'Please verify your email. A new verification email has been sent.' };
       }
-
+      
       // If we get here, the user is verified and logged in
       return { error: null };
     } catch (error: any) {

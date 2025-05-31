@@ -69,8 +69,8 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				'orbitron': ['Orbitron', 'monospace'],
-				'sans': ['Noto Sans', 'sans-serif'],
+				'inter': ['Inter', 'Satoshi', 'SF Pro Rounded', 'Noto Sans', 'sans-serif'],
+				'sans': ['Inter', 'Satoshi', 'SF Pro Rounded', 'Noto Sans', 'sans-serif'],
 			},
 			keyframes: {
 				'accordion-down': {

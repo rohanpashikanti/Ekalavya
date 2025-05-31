@@ -6,10 +6,11 @@ import DailyQuiz from '../components/quiz/DailyQuiz';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Brain, Target, BookOpen, Globe, Loader2, Calculator, Lightbulb } from 'lucide-react';
+import { Clock, Brain, Target, BookOpen, Globe, Loader2, Calculator, Lightbulb, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData, getRecentQuizzes } from '@/lib/userData';
+import AptitudeTest from '../components/AptitudeTest';
 
 const Quiz: React.FC = () => {
   const { user } = useAuth();
@@ -17,40 +18,53 @@ const Quiz: React.FC = () => {
   const [currentQuiz, setCurrentQuiz] = useState<any>(null);
   const [quizState, setQuizState] = useState<'selection' | 'taking' | 'completed'>('selection');
   const [quizResults, setQuizResults] = useState<any>(null);
+  const [showAptitudeTest, setShowAptitudeTest] = useState(false);
 
   const quizCategories = [
     {
       id: 'quantitative',
       name: 'Quantitative Aptitude',
       icon: Calculator,
-      color: 'from-purple-500 to-pink-500',
+      colorClass: 'card-it',
+      badge: <span className="badge-star">Intermediate</span>,
       description: 'Mathematics, Data Interpretation, and Problem Solving',
-      difficulty: 'Intermediate'
+      difficulty: 'Intermediate',
+      questions: 20,
+      time: '40 minutes',
     },
     {
       id: 'logical',
       name: 'Logical Reasoning',
       icon: Target,
-      color: 'from-blue-500 to-cyan-500',
+      colorClass: 'card-business',
+      badge: <span className="badge-business">Advanced</span>,
       description: 'Pattern Recognition, Analytical Thinking',
-      difficulty: 'Advanced'
+      difficulty: 'Advanced',
+      questions: 20,
+      time: '40 minutes',
     },
     {
       id: 'verbal-ability',
       name: 'Verbal Ability',
       icon: BookOpen,
-      color: 'from-green-500 to-teal-500',
+      colorClass: 'card-media',
+      badge: <span className="badge-media">Beginner</span>,
       description: 'Reading Comprehension, Grammar, Vocabulary',
-      difficulty: 'Beginner'
+      difficulty: 'Beginner',
+      questions: 20,
+      time: '40 minutes',
     },
     {
       id: 'ai-aptitude',
       name: 'AI-Powered Aptitude',
       icon: Brain,
-      color: 'from-indigo-500 to-purple-500',
+      colorClass: 'card-interior',
+      badge: <span className="badge-interior">Adaptive</span>,
       description: 'Dynamic aptitude questions powered by AI',
-      difficulty: 'Adaptive'
-    }
+      difficulty: 'Adaptive',
+      questions: 20,
+      time: '',
+    },
   ];
 
   const specificTopics = {
@@ -85,15 +99,15 @@ const Quiz: React.FC = () => {
     setLoading(true);
     try {
       // Get user's performance data
-      const userData = getUserData(user.id);
-      const recentQuizzes = getRecentQuizzes(user.id, 10); // Get last 10 quizzes for analysis
+      const userData = getUserData(user.uid);
+      const recentQuizzes = getRecentQuizzes(user.uid, 10); // Get last 10 quizzes for analysis
 
       const { data, error } = await supabase.functions.invoke('generate-quiz', {
         body: { 
           topic: topicId, 
           difficulty, 
           quizType,
-          userId: user.id
+          userId: user.uid
         },
         headers: {
           Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
@@ -169,6 +183,10 @@ const Quiz: React.FC = () => {
     );
   }
 
+  if (showAptitudeTest) {
+    return <Layout><AptitudeTest /></Layout>;
+  }
+
   // Show specific topics if a category is selected
   if (selectedCategory && specificTopics[selectedCategory as keyof typeof specificTopics]) {
     const topics = specificTopics[selectedCategory as keyof typeof specificTopics];
@@ -176,65 +194,47 @@ const Quiz: React.FC = () => {
     return (
       <Layout>
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <Button 
-                variant="outline" 
-                onClick={() => setSelectedCategory(null)}
-                className="mb-4 border-gray-600 text-gray-200 hover:bg-gray-700"
-              >
-                ← Back to Categories
-              </Button>
-              <h1 className="text-3xl font-bold text-white mb-2">
-                {quizCategories.find(c => c.id === selectedCategory)?.name} Topics
-              </h1>
-              <p className="text-gray-400">Choose a specific topic for targeted practice</p>
-            </div>
-          </div>
-
+          <Button 
+            variant="outline" 
+            onClick={() => setSelectedCategory(null)}
+            className="mb-4 category-btn"
+          >
+            ← Back to Categories
+          </Button>
+          <h1 className="heading-hero mb-2">{quizCategories.find(c => c.id === selectedCategory)?.name} Topics</h1>
+          <div className="text-2xl font-medium mb-8" style={{ color: '#5C5C5C' }}>Choose a specific topic for targeted practice</div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {topics.map((topic) => (
-              <Card key={topic.id} className="bg-gray-800/50 border-gray-700 hover:border-gray-600 transition-all duration-300">
-                <CardHeader>
-                  <CardTitle className="text-white">{topic.name}</CardTitle>
-                  <CardDescription className="text-gray-400">
-                    {topic.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm text-gray-400">
-                      <div className="flex items-center gap-2">
-                        <Brain className="w-4 h-4" />
-                        <span>20 questions</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        <span>40 minutes</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={() => startQuiz(topic.id, 'intermediate', 'practice')}
-                        disabled={loading}
-                        variant="outline"
-                        className="flex-1 border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white"
-                      >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Lightbulb className="w-4 h-4 mr-2" />}
-                        Practice
-                      </Button>
-                      <Button 
-                        onClick={() => startQuiz(topic.id, 'intermediate', 'exam')}
-                        disabled={loading}
-                        className="flex-1 bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 text-white"
-                      >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                        Exam
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div key={topic.id} className="rounded-card soft-shadow p-6 flex flex-col gap-2 card-it">
+                <div className="flex items-center gap-2 mb-2">
+                  <Brain className="w-6 h-6" />
+                  <span className="font-semibold">{topic.name}</span>
+                  <span className="badge-star">Practice</span>
+                </div>
+                <div className="text-[#5C5C5C] mb-1">{topic.description}</div>
+                <div className="flex gap-4 text-sm mb-2">
+                  <span>20 questions</span>
+                  <span>40 minutes</span>
+                </div>
+                <div className="flex gap-2 mt-auto">
+                  <button 
+                    onClick={() => startQuiz(topic.id, 'intermediate', 'practice')}
+                    disabled={loading}
+                    className="category-btn flex-1"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Lightbulb className="w-4 h-4 mr-2" />}
+                    Practice
+                  </button>
+                  <button 
+                    onClick={() => startQuiz(topic.id, 'intermediate', 'exam')}
+                    disabled={loading}
+                    className="category-btn flex-1 active"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    Exam
+                  </button>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -245,85 +245,60 @@ const Quiz: React.FC = () => {
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Button 
-              variant="outline" 
-              onClick={() => window.location.href = '/dashboard'}
-              className="mb-4 border-gray-600 text-gray-200 hover:bg-gray-700"
-            >
-              ← Back to Dashboard
-            </Button>
-            <h1 className="text-3xl font-bold text-white mb-2">Choose Your Quiz</h1>
-            <p className="text-gray-400">Select a category to test your aptitude</p>
+        <Button 
+          variant="outline" 
+          onClick={() => window.location.href = '/dashboard'}
+          className="mb-4 category-btn"
+        >
+          ← Back to Dashboard
+        </Button>
+        <h1 className="heading-hero mb-2">Choose Your Quiz</h1>
+        <div className="text-2xl font-medium mb-8" style={{ color: '#5C5C5C' }}>Select a category to test your aptitude</div>
+        {/* Daily Challenge */}
+        <div className="rounded-card soft-shadow p-6 flex flex-col gap-2 mb-8 card-business">
+          <div className="flex items-center gap-2 mb-2">
+            <Star className="w-6 h-6 text-[#FFB648]" />
+            <span className="font-semibold text-lg">Daily Challenge</span>
           </div>
+          <div className="font-bold text-xl mb-1">Test your skills with a comprehensive quiz covering various aptitude topics</div>
+          <div className="flex gap-4 text-sm mb-2">
+            <span>25 questions</span>
+            <span>50 minutes</span>
+          </div>
+          <button
+            onClick={() => window.location.href = '/exam/daily-challenge'}
+            className="category-btn active w-full md:w-auto"
+          >
+            Start Daily Challenge
+          </button>
         </div>
-
-        <Card className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 transition-all duration-300">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Daily Challenge</h2>
-                <p className="text-white/90">Test your skills with a comprehensive quiz covering various aptitude topics</p>
-                <div className="flex items-center gap-4 mt-2 text-white/90">
-                  <div className="flex items-center gap-2">
-                    <Brain className="w-4 h-4" />
-                    <span>25 questions</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    <span>50 minutes</span>
-                  </div>
-                </div>
-              </div>
-              <Button
-                onClick={() => window.location.href = '/exam/daily-challenge'}
-                className="w-full md:w-auto bg-white text-cyan-600 hover:bg-white/90"
-              >
-                Start Daily Challenge
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Regular Quiz Categories */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {quizCategories.map((category) => (
-            <Card
+            <div
               key={category.id}
-              className="bg-gray-800/50 border-gray-700 hover:border-gray-600 transition-all duration-300 cursor-pointer"
+              className={`rounded-card soft-shadow p-6 flex flex-col gap-2 cursor-pointer ${category.colorClass}`}
               onClick={() => {
                 if (category.id === 'verbal-ability') {
                   window.location.href = '/exam/verbal-ability';
+                } else if (category.id === 'ai-aptitude') {
+                  setShowAptitudeTest(true);
                 } else {
                   setSelectedCategory(category.id);
                 }
               }}
             >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-white">{category.name}</CardTitle>
-                  <Badge variant="secondary" className="bg-blue-500/20 text-blue-400">
-                    {category.difficulty}
-                  </Badge>
-                </div>
-                <CardDescription className="text-gray-400">
-                  {category.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between text-sm text-gray-400">
-                  <div className="flex items-center gap-2">
-                    <Brain className="w-4 h-4" />
-                    <span>20 questions</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    <span>40 minutes</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              <div className="flex items-center gap-2 mb-2">
+                <category.icon className="w-6 h-6" />
+                <span className="font-semibold">{category.name}</span>
+                {category.badge}
+              </div>
+              <div className="text-[#5C5C5C] mb-1">{category.description}</div>
+              <div className="flex gap-4 text-sm mb-2">
+                <span>{category.questions} questions</span>
+                <span>{category.time}</span>
+              </div>
+            </div>
           ))}
         </div>
       </div>

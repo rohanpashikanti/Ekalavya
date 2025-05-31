@@ -33,7 +33,7 @@ interface VerbalAbilityExamProps {
   onComplete: (score: number, timeTaken: number, questions: Question[]) => void;
 }
 
-const TOTAL_TIME = 40 * 60; // 40 minutes in seconds
+const TOTAL_TIME = 25 * 60; // 40 minutes in seconds
 const TOTAL_QUESTIONS = 20;
 const READING_COMP_QUESTIONS = 8;
 const GRAMMAR_QUESTIONS = 6;
@@ -246,38 +246,30 @@ Return ONLY a valid JSON object, no other text.`;
 
   if (!examStarted) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <Card className="w-full max-w-md p-6 bg-gray-800/50 backdrop-blur-lg border border-gray-700">
-          <CardHeader>
-            <div className="flex flex-col space-y-4">
-              <Button 
-                variant="outline" 
-                onClick={() => window.location.href = '/quiz'}
-                className="w-fit border-gray-600 text-gray-200 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
-              >
-                ← Back to Quiz
-              </Button>
-              <CardTitle className="text-2xl font-bold text-white">Verbal Ability Exam</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4 text-gray-400">
-              <p>This exam covers:</p>
-              <ul className="list-disc list-inside mt-2">
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="w-full max-w-md">
+          <button
+            className="mb-4 category-btn"
+            onClick={() => window.history.back()}
+          >
+            ← Back to Quiz
+          </button>
+          <div className="rounded-card soft-shadow p-8 flex flex-col gap-4 card-media">
+            <div className="heading-hero mb-2">Verbal Ability Exam</div>
+            <div className="text-2xl font-medium mb-4" style={{ color: '#5C5C5C' }}>
+              This exam covers:
+              <ul className="list-disc ml-6 mt-2 text-base">
                 <li>Reading Comprehension</li>
                 <li>Grammar</li>
                 <li>Vocabulary</li>
               </ul>
             </div>
-            <div className="mb-4 text-gray-400">You will get {TOTAL_QUESTIONS} MCQ questions and {TOTAL_TIME / 60} minutes to complete the test.</div>
-            <Button 
-              className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
-              onClick={handleStartExam}
-            >
-              Start Exam
-            </Button>
-          </CardContent>
-        </Card>
+            <div className="text-base mb-4" style={{ color: '#5C5C5C' }}>
+              You will get 20 MCQ questions and 25 minutes to complete the test.
+            </div>
+            <button className="category-btn active w-full" onClick={handleStartExam}>Start Exam</button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -480,21 +472,17 @@ Return ONLY a valid JSON object, no other text.`;
               {questions[currentQuestion]?.options && (
                 <div className="space-y-2 w-full max-w-md">
                   {questions[currentQuestion].options.map((opt, i) => (
-                    <Button
+                    <button
                       key={i}
-                      variant={questions[currentQuestion].userAnswer === opt ? 'default' : 'outline'}
-                      className={`w-full text-left h-auto min-h-[48px] py-3 px-4 whitespace-normal ${
-                        questions[currentQuestion].userAnswer === opt
-                          ? 'bg-blue-500 text-white hover:bg-blue-600'
-                          : 'border-gray-700 text-gray-300 hover:bg-gray-800 hover:border-gray-600'
-                      }`}
+                      className={`option-btn${questions[currentQuestion].userAnswer === opt ? ' selected' : ''}`}
                       onClick={() => handleMCQ(opt)}
+                      type="button"
                     >
                       <div className="flex items-start gap-2">
                         <span className="font-semibold shrink-0">{String.fromCharCode(65 + i)}.</span>
                         <span className="text-left">{opt}</span>
                       </div>
-                    </Button>
+                    </button>
                   ))}
                 </div>
               )}

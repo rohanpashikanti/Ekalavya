@@ -1,16 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { getUserData, getRecentQuizzes } from '@/lib/userData';
 import { useAuth } from '@/contexts/AuthContext';
-import { Clock, Brain, Target, Trophy } from 'lucide-react';
+import { Clock, Brain, Target, Trophy, Calendar } from 'lucide-react';
 
 const DashboardStats: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const userData = user ? getUserData(user.id) : null;
-  const recentQuizzes = user ? getRecentQuizzes(user.id) : [];
+  const [userData, setUserData] = useState<any>(null);
+  const [recentQuizzes, setRecentQuizzes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      const data = getUserData(user.uid);
+      const quizzes = getRecentQuizzes(user.uid, 5);
+      setUserData(data);
+      setRecentQuizzes(quizzes);
+    }
+    setLoading(false);
+  }, [user]);
+
+  if (loading) {
+    return <div className="text-white">Loading...</div>;
+  }
 
   if (!user || !userData) {
     return (
@@ -40,31 +55,31 @@ const DashboardStats: React.FC = () => {
 
         <Card className="bg-gray-800/50 border-gray-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Avg. Score</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">Current Streak</CardTitle>
             <Target className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{userData.avgScore.toFixed(1)}%</div>
+            <div className="text-2xl font-bold text-white">{userData.currentStreak}</div>
           </CardContent>
         </Card>
 
         <Card className="bg-gray-800/50 border-gray-700">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Avg. Time</CardTitle>
-            <Clock className="h-4 w-4 text-gray-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{Math.round(userData.avgTime / 60)}m</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gray-800/50 border-gray-700">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Best Score</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">Best Streak</CardTitle>
             <Trophy className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{userData.bestScore}/20</div>
+            <div className="text-2xl font-bold text-white">{userData.bestStreak}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gray-800/50 border-gray-700">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-400">Accuracy</CardTitle>
+            <Clock className="h-4 w-4 text-gray-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">{userData.accuracy.toFixed(1)}%</div>
           </CardContent>
         </Card>
       </div>
@@ -86,7 +101,7 @@ const DashboardStats: React.FC = () => {
                     </p>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium text-white">{quiz.score}/20</div>
+                    <div className="font-medium text-white">{quiz.score}/{quiz.total}</div>
                     <div className="text-sm text-gray-400">{Math.round(quiz.timeTaken / 60)}m</div>
                   </div>
                 </div>
@@ -107,31 +122,20 @@ const DashboardStats: React.FC = () => {
       <Card className="bg-gray-800/50 border-gray-700">
         <CardHeader>
           <CardTitle className="text-xl font-bold text-white">Weekly Progress</CardTitle>
+          <p className="text-sm text-gray-400">
+            This Week's Goal: {Object.values(userData.weeklyProgress).filter(Boolean).length}/7 days
+          </p>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-between items-center mb-4">
-            <div>
-              <div className="text-2xl font-bold text-white">
-                {Object.values(userData.weeklyProgress).filter(Boolean).length}/7
-              </div>
-              <div className="text-sm text-gray-400">This Week's Goal</div>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-white">{userData.currentStreak}</div>
-              <div className="text-sm text-gray-400">Current Streak</div>
-            </div>
-          </div>
           <div className="grid grid-cols-7 gap-2">
             {Object.entries(userData.weeklyProgress).map(([day, completed]) => (
-              <div
-                key={day}
-                className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium ${
-                  completed
-                    ? 'bg-cyan-600 text-white'
-                    : 'bg-gray-700 text-gray-400'
-                }`}
-              >
-                {day.charAt(0).toUpperCase()}
+              <div key={day} className="text-center">
+                <div className={`w-full aspect-square rounded-lg flex items-center justify-center ${
+                  completed ? 'bg-green-500/20 text-green-400' : 'bg-gray-700/30 text-gray-400'
+                }`}>
+                  {day.charAt(0).toUpperCase()}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">{day.slice(0, 3)}</div>
               </div>
             ))}
           </div>

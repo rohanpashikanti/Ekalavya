@@ -1,231 +1,237 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Layout from '../components/layout/Layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Brain, Target, Trophy, Calendar, TrendingUp, Star, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getUserData } from '@/lib/userData';
+import { Brain, Target, Trophy, Star, User, Zap } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const userData = user ? getUserData(user.uid) : null;
-  const username = userData?.username || user?.displayName || 'User';
+  const [userData, setUserData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const loadUserData = () => {
+      if (user?.uid) {
+        let data = getUserData(user.uid);
+        if (!data.quizHistory || data.quizHistory.length === 0) {
+          const oldData = getUserData('undefined');
+          if (oldData.quizHistory && oldData.quizHistory.length > 0) {
+            data = oldData;
+          }
+        }
+        setUserData(data);
+      }
+      setLoading(false);
+    };
+    loadUserData();
+    const interval = setInterval(loadUserData, 60000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="text-center py-8">
+          <div className="text-black">Loading...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Layout>
+        <div className="text-center py-8">
+          <div className="text-black">Please log in to view your dashboard</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  const username = userData?.username || user?.displayName || 'User';
+  const totalQuizzes = userData?.quizHistory?.length || 0;
+  const totalScore = userData?.quizHistory?.reduce((sum: number, quiz: any) => sum + quiz.score, 0) || 0;
+  const totalQuestions = userData?.quizHistory?.reduce((sum: number, quiz: any) => sum + quiz.total, 0) || 0;
+  const bestScore = userData?.quizHistory?.length > 0 
+    ? Math.max(...userData.quizHistory.map((quiz: any) => quiz.score))
+    : 0;
+  const accuracy = totalQuestions > 0 ? (totalScore / totalQuestions) * 100 : 0;
+  const currentStreak = userData?.currentStreak || 0;
+  const bestStreak = userData?.bestStreak || 0;
+  const avgTime = userData?.avgTime || 0;
+
+  // For activity chart (dummy data for now)
+  const activityData = [45, 60, 80, 90, 70, 85, 95];
+  const activityColors = [
+    'chart-bar1',
+    'chart-bar2',
+    'chart-bar3',
+    'chart-bar4',
+    'chart-bar5',
+    'chart-bar6',
+    'chart-bar1',
+  ];
+
+  // Quiz categories
   const categories = [
     {
       id: 'quantitative',
       name: 'Quantitative Aptitude',
-      icon: Brain,
-      color: 'from-purple-500 to-pink-500',
+      icon: <Brain className="w-6 h-6" />,
+      colorClass: 'card-it',
+      badge: <span className="badge-star">Intermediate</span>,
       description: 'Mathematics, Data Interpretation, and Problem Solving',
-      difficulty: 'Intermediate',
       questions: 25,
-      timeLimit: '30 mins'
+      timeLimit: '30 mins',
+      link: '/quiz',
     },
     {
       id: 'logical',
       name: 'Logical Reasoning',
-      icon: Target,
-      color: 'from-blue-500 to-cyan-500',
+      icon: <Target className="w-6 h-6" />,
+      colorClass: 'card-business',
+      badge: <span className="badge-business">Advanced</span>,
       description: 'Pattern Recognition, Analytical Thinking',
-      difficulty: 'Advanced',
       questions: 20,
-      timeLimit: '25 mins'
+      timeLimit: '25 mins',
+      link: '/quiz',
     },
     {
       id: 'verbal',
       name: 'Verbal Ability',
-      icon: Trophy,
-      color: 'from-green-500 to-teal-500',
+      icon: <Trophy className="w-6 h-6" />,
+      colorClass: 'card-media',
+      badge: <span className="badge-media">Beginner</span>,
       description: 'Reading Comprehension, Grammar, Vocabulary',
-      difficulty: 'Beginner',
-      questions: 30,
-      timeLimit: '35 mins'
+      questions: 20,
+      timeLimit: '25 mins',
+      link: '/quiz',
     },
     {
       id: 'ai-aptitude',
       name: 'AI-Powered Aptitude',
-      icon: Brain,
-      color: 'from-indigo-500 to-purple-500',
+      icon: <Zap className="w-6 h-6" />,
+      colorClass: 'card-interior',
+      badge: <span className="badge-interior">Adaptive</span>,
       description: 'Dynamic aptitude questions powered by AI',
-      difficulty: 'Adaptive',
       questions: 'Dynamic',
-      timeLimit: 'Flexible'
-    }
+      timeLimit: 'Flexible',
+      link: '/quiz',
+    },
   ];
 
   return (
     <Layout>
-      <div className="space-y-6">
-        {/* Welcome Section */}
-        <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-xl p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">
-                Welcome back, {username}!
-              </h1>
-              <p className="text-blue-100 text-lg">
-                Ready to challenge your mind today?
-              </p>
+      <div className="flex gap-8">
+        {/* Main Content */}
+        <div className="flex-1 max-w-4xl mx-auto py-8">
+          <h1 className="heading-hero mb-2">Welcome back, {username}</h1>
+          <div className="text-2xl font-medium mb-8" style={{ color: '#5C5C5C' }}>Ready to challenge your mind today?</div>
+
+          {/* Today's Challenge */}
+          <div className="rounded-card soft-shadow p-6 flex flex-col gap-2 mb-8" style={{ background: '#FEE8B7' }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Star className="w-6 h-6 text-[#FFB648]" />
+              <span className="font-semibold text-lg">Today's Challenge</span>
             </div>
+            <div className="font-bold text-xl mb-1">Mixed Aptitude Quiz</div>
+            <div className="text-[#5C5C5C] mb-2">25 questions • 50 minutes • All categories</div>
+            <Link to="/quiz">
+              <button className="category-btn active">Start Quiz</button>
+            </Link>
           </div>
-        </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <Card className="bg-gray-800/50 border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-cyan-400">{userData?.currentStreak || 0}</div>
-              <div className="text-sm text-gray-400">Current Streak</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gray-800/50 border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-purple-400">{userData?.bestStreak || 0}</div>
-              <div className="text-sm text-gray-400">Best Streak</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gray-800/50 border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-green-400">{userData?.totalQuizzes || 0}</div>
-              <div className="text-sm text-gray-400">Total Quizzes</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gray-800/50 border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-yellow-400">{userData?.accuracy ? userData.accuracy.toFixed(1) : 0}%</div>
-              <div className="text-sm text-gray-400">Accuracy</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-gray-800/50 border-gray-700">
-            <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-orange-400">{userData?.bestScore || 0}/20</div>
-              <div className="text-sm text-gray-400">High Score</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Today's Challenge */}
-        <Card className="bg-gradient-to-r from-gray-800/80 to-gray-800/60 border-gray-700">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Star className="w-5 h-5 text-yellow-400" />
-              Today's Challenge
-            </CardTitle>
-            <CardDescription className="text-gray-300">
-              Complete your daily quiz to maintain your streak!
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Mixed Aptitude Quiz</h3>
-                <p className="text-gray-400">25 questions • 50 minutes • All categories</p>
-              </div>
-              <Button 
-                asChild
-                className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
-              >
-                <Link to="/quiz">Start Quiz</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Categories */}
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-4">Quiz Categories</h2>
+          {/* Quiz Categories */}
+          <div className="mb-4 heading-section">Quiz Categories</div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {categories.map((category) => {
-              const IconComponent = category.icon;
-              return (
-                <Card key={category.id} className="group bg-gray-800/50 border-gray-700 hover:border-gray-600 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${category.color} flex items-center justify-center`}>
-                        <IconComponent className="w-6 h-6 text-white" />
-                      </div>
-                      <Badge 
-                        variant="outline" 
-                        className={`${
-                          category.difficulty === 'Beginner' ? 'border-green-500 text-green-400' :
-                          category.difficulty === 'Intermediate' ? 'border-yellow-500 text-yellow-400' :
-                          'border-red-500 text-red-400'
-                        }`}
-                      >
-                        {category.difficulty}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-white group-hover:text-cyan-400 transition-colors">
-                      {category.name}
-                    </CardTitle>
-                    <CardDescription className="text-gray-400">
-                      {category.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between text-sm text-gray-400 mb-4">
-                      <span>{category.questions} questions</span>
-                      <span>{category.timeLimit}</span>
-                    </div>
-                    <Button 
-                      asChild
-                      variant="outline" 
-                      className="w-full border-gray-600 text-gray-200 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
-                    >
-                      <Link to={category.id === 'ai-aptitude' ? '/aptitude-test' : `/quiz?category=${category.id}`}>
-                        Practice Now
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {categories.map((cat) => (
+              <div key={cat.id} className={`rounded-card soft-shadow p-6 flex flex-col gap-2 ${cat.colorClass}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  {cat.icon}
+                  <span className="font-semibold">{cat.name}</span>
+                  {cat.badge}
+                </div>
+                <div className="text-[#5C5C5C] mb-1">{cat.description}</div>
+                <div className="flex gap-4 text-sm mb-2">
+                  <span>{cat.questions} questions</span>
+                  <span>{cat.timeLimit}</span>
+                </div>
+                <Link to={cat.link} className="mt-auto">
+                  <button className="category-btn">Practice Now</button>
+                </Link>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Performance Overview */}
-        <Card className="bg-gray-800/50 border-gray-700">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <TrendingUp className="w-5 h-5 text-green-400" />
-              Weekly Progress
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-400">This Week's Goal</span>
-                  <span className="text-white">
-                    {userData ? Object.values(userData.weeklyProgress).filter(Boolean).length : 0}/7 days
-                  </span>
-                </div>
-                <Progress 
-                  value={userData ? (Object.values(userData.weeklyProgress).filter(Boolean).length / 7) * 100 : 0} 
-                  className="h-2" 
-                />
-              </div>
-              <div className="grid grid-cols-7 gap-2">
-                {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
-                  <div
-                    key={index}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                      userData?.weeklyProgress[Object.keys(userData.weeklyProgress)[index]]
-                        ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white' 
-                        : 'bg-gray-700 text-gray-400'
-                    }`}
-                  >
-                    {day}
-                  </div>
-                ))}
+        {/* Right Sidebar */}
+        <aside className="right-panel hidden lg:block ml-4" style={{ minWidth: 320 }}>
+          <div className="user-profile mb-6">
+            <div className="user-avatar flex items-center justify-center">
+              <User className="w-8 h-8 text-[#978BF4]" />
+            </div>
+            <div className="user-info">
+              <h3>{username}</h3>
+              <div className="user-stats">
+                <span>Streak: {currentStreak}</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+
+          {/* Activity Section */}
+          <div className="activity-section mb-6">
+            <div className="activity-header">
+              <div>
+                <div className="activity-time">{(avgTime/60).toFixed(1)}h</div>
+                <div className="activity-badge">Great result!</div>
+              </div>
+              <select style={{ border: 'none', background: 'transparent', fontWeight: 600 }}>
+                <option>Year</option>
+                <option>Month</option>
+                <option>Week</option>
+              </select>
+            </div>
+            <div className="activity-chart">
+              {activityData.map((val, i) => (
+                <div key={i} className={`chart-bar ${activityColors[i]}`} style={{ height: `${val}%` }}></div>
+              ))}
+            </div>
+          </div>
+
+          {/* Stats Overview */}
+          <div className="my-courses">
+            <h4>Stats</h4>
+            <div className="course-item">
+              <div className="course-item-icon" style={{ background: '#FAD7D7' }}><Trophy className="w-5 h-5" /></div>
+              <div className="course-item-info">
+                <h5>Total Quizzes</h5>
+                <div className="course-item-rating">{totalQuizzes}</div>
+              </div>
+            </div>
+            <div className="course-item">
+              <div className="course-item-icon" style={{ background: '#FEE8B7' }}><Star className="w-5 h-5" /></div>
+              <div className="course-item-info">
+                <h5>Best Streak</h5>
+                <div className="course-item-rating">{bestStreak}</div>
+              </div>
+            </div>
+            <div className="course-item">
+              <div className="course-item-icon" style={{ background: '#E1DDFC' }}><Brain className="w-5 h-5" /></div>
+              <div className="course-item-info">
+                <h5>Accuracy</h5>
+                <div className="course-item-rating">{accuracy.toFixed(1)}%</div>
+              </div>
+            </div>
+            <div className="course-item">
+              <div className="course-item-icon" style={{ background: '#D8F5E4' }}><Target className="w-5 h-5" /></div>
+              <div className="course-item-info">
+                <h5>High Score</h5>
+                <div className="course-item-rating">{bestScore}/20</div>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
     </Layout>
   );

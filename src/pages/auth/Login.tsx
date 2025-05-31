@@ -51,7 +51,7 @@ const Login: React.FC = () => {
       } else {
         // Add a small delay to ensure the auth state is properly updated
         setTimeout(() => {
-          navigate(from, { replace: true });
+        navigate(from, { replace: true });
         }, 500);
       }
     } catch (err: any) {

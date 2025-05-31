@@ -188,42 +188,34 @@ const AptitudeTest = () => {
   // Start screen
   if (!examStarted) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <Card className="w-full max-w-md p-6 bg-gray-800/50 backdrop-blur-lg border border-gray-700">
-          <CardHeader>
-            <div className="flex flex-col space-y-4">
-              <Button 
-                variant="outline" 
-                onClick={() => window.location.href = '/quiz'}
-                className="w-fit border-gray-600 text-gray-200 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
-              >
-                ← Back to Quiz
-              </Button>
-              <CardTitle className="text-2xl font-bold text-white">Start Aptitude Exam</CardTitle>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="w-full max-w-md">
+          <button
+            className="mb-4 category-btn"
+            onClick={() => window.history.back()}
+          >
+            ← Back to Quiz
+          </button>
+          <div className="rounded-card soft-shadow p-8 flex flex-col gap-4 card-interior">
+            <div className="heading-hero mb-2">Start Aptitude Exam</div>
+            <div className="text-2xl font-medium mb-4" style={{ color: '#5C5C5C' }}>
+              Select Topic
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <label className="block mb-2 font-medium text-gray-200">Select Topic</label>
-              <select
-                className="w-full border rounded p-2 bg-gray-700 border-gray-600 text-gray-200"
-                value={selectedTopic}
-                onChange={e => setSelectedTopic(e.target.value)}
-              >
-                {TOPICS.map(topic => (
-                  <option key={topic} value={topic}>{topic}</option>
-                ))}
-              </select>
-            </div>
-            <div className="mb-4 text-gray-400">You will get 20 MCQ questions and 40 minutes to complete the test.</div>
-            <Button 
-              className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
-              onClick={handleStartExam}
+            <select
+              className="w-full border rounded p-2 mb-4"
+              value={selectedTopic}
+              onChange={e => setSelectedTopic(e.target.value)}
             >
-              Start Exam
-            </Button>
-          </CardContent>
-        </Card>
+              {TOPICS.map(topic => (
+                <option key={topic} value={topic}>{topic}</option>
+              ))}
+            </select>
+            <div className="text-base mb-4" style={{ color: '#5C5C5C' }}>
+              You will get 20 MCQ questions and 40 minutes to complete the test.
+            </div>
+            <button className="category-btn active w-full" onClick={handleStartExam}>Start Exam</button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -330,14 +322,14 @@ const AptitudeTest = () => {
             {questions[currentQuestion]?.options && (
               <div className="space-y-2 w-full max-w-md">
                 {questions[currentQuestion].options.map((opt, i) => (
-                  <Button
+                  <button
                     key={i}
-                    variant={questions[currentQuestion].userAnswer === opt ? 'default' : 'outline'}
-                    className="w-full text-left"
+                    className={`option-btn${questions[currentQuestion].userAnswer === opt ? ' selected' : ''}`}
                     onClick={() => handleMCQ(opt)}
+                    type="button"
                   >
                     {String.fromCharCode(65 + i)}. {opt}
-                  </Button>
+                  </button>
                 ))}
               </div>
             )}

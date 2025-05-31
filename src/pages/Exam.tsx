@@ -59,7 +59,7 @@ const Exam: React.FC = () => {
 
     try {
       // Get user's existing data
-      const userData = getUserData(user.id);
+      const userData = getUserData(user.uid);
 
       // Calculate new statistics
       const newTotalQuizzes = userData.totalQuizzes + 1;
@@ -141,7 +141,7 @@ const Exam: React.FC = () => {
       };
 
       // Save updated data
-      saveUserData(user.id, updatedUserData);
+      saveUserData(user.uid, updatedUserData);
 
       // Show success message with streak and weekly progress info
       const streakMessage = `Exam results saved! Your streak is now ${newCurrentStreak} days and weekly progress is ${weeklyProgressCount}/7.`;

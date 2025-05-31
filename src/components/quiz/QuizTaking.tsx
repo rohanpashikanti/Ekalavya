@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { getUserData, saveUserData } from '@/lib/userData';
 
 interface Question {
   id: string;
@@ -20,7 +21,7 @@ interface Question {
 
 interface QuizTakingProps {
   quizId: string;
-  questions: Question[];
+  questions: any[];
   topic: string;
   onComplete: (score: number, timeTaken: number) => void;
   timeLimit?: number;
@@ -107,14 +108,71 @@ const QuizTaking: React.FC<QuizTakingProps> = ({ quizId, questions, topic, onCom
         if (questionError) console.error('Error updating question:', questionError);
       }
 
-      // Update user stats
+      // Update user stats in Supabase
       const { error: statsError } = await supabase.rpc('update_user_stats', {
-        p_user_id: user?.id,
+        p_user_id: user?.uid,
         p_score: score,
         p_total_questions: questions.length,
       });
 
       if (statsError) console.error('Error updating user stats:', statsError);
+
+      // Update user data in localStorage
+      if (user) {
+        const userData = getUserData(user.uid);
+        const newQuizEntry = {
+          topic,
+          score,
+          total: questions.length,
+          timeTaken,
+          date: new Date().toISOString(),
+          questions: updatedQuestions.map(q => ({
+            question: q.question_text,
+            userAnswer: q.user_answer,
+            correctAnswer: q.correct_answer,
+            markedForReview: false
+          }))
+        };
+
+        const updatedUserData = {
+          ...userData,
+          totalQuizzes: userData.totalQuizzes + 1,
+          totalScore: userData.totalScore + score,
+          avgScore: ((userData.avgScore * userData.totalQuizzes) + score) / (userData.totalQuizzes + 1),
+          avgTime: ((userData.avgTime * userData.totalQuizzes) + timeTaken) / (userData.totalQuizzes + 1),
+          bestScore: Math.max(userData.bestScore, score),
+          accuracy: ((userData.accuracy * userData.totalQuizzes) + (score / questions.length)) / (userData.totalQuizzes + 1),
+          lastQuizDate: new Date().toISOString(),
+          quizHistory: [newQuizEntry, ...userData.quizHistory]
+        };
+
+        // Update weekly progress
+        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        updatedUserData.weeklyProgress[today] = true;
+
+        // Update streak
+        const lastQuizDate = userData.lastQuizDate ? new Date(userData.lastQuizDate) : null;
+        if (lastQuizDate) {
+          const lastDate = new Date(lastQuizDate);
+          lastDate.setHours(0, 0, 0, 0);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          const diffDays = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+          
+          if (diffDays === 1) {
+            updatedUserData.currentStreak = userData.currentStreak + 1;
+            updatedUserData.bestStreak = Math.max(userData.bestStreak, updatedUserData.currentStreak);
+          } else if (diffDays > 1) {
+            updatedUserData.currentStreak = 1;
+          }
+        } else {
+          updatedUserData.currentStreak = 1;
+          updatedUserData.bestStreak = 1;
+        }
+
+        saveUserData(user.uid, updatedUserData);
+      }
 
       onComplete(score, timeTaken);
     } catch (error) {
@@ -165,19 +223,15 @@ const QuizTaking: React.FC<QuizTakingProps> = ({ quizId, questions, topic, onCom
             { key: 'C', text: currentQ.option_c },
             { key: 'D', text: currentQ.option_d },
           ].map((option) => (
-            <Button
+            <button
               key={option.key}
-              variant={answers[currentQuestion] === option.key ? "default" : "outline"}
-              className={`w-full justify-start h-auto p-4 text-left ${
-                answers[currentQuestion] === option.key
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'border-gray-600 text-gray-200 hover:bg-gray-700'
-              }`}
+              className={`option-btn${answers[currentQuestion] === option.key ? ' selected' : ''}`}
               onClick={() => handleAnswerSelect(option.key)}
+              type="button"
             >
               <span className="font-semibold mr-3">{option.key}.</span>
               <span>{option.text}</span>
-            </Button>
+            </button>
           ))}
         </CardContent>
       </Card>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
@@ -6,16 +6,11 @@ import {
   Brain,
   History,
   User,
-  ChevronLeft,
-  ChevronRight,
-  Zap,
   Trophy
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Take Quiz', href: '/quiz', icon: Brain },
@@ -25,32 +20,8 @@ const Sidebar: React.FC = () => {
   ];
 
   return (
-    <div className={cn(
-      "bg-gray-800/50 backdrop-blur-lg border-r border-gray-700 transition-all duration-300 flex flex-col",
-      collapsed ? "w-16" : "w-64"
-    )}>
-      {/* Header */}
-      <div className="p-4 border-b border-gray-700">
-        <div className="flex items-center justify-between">
-          {!collapsed && (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-lg flex items-center justify-center">
-                <Zap className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-white font-bold text-lg">Ekalavya</span>
-            </div>
-          )}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="p-1 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
-          >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+    <aside className="fixed top-8 left-8 z-30 flex flex-col items-center bg-white rounded-3xl shadow-xl py-6 px-2 gap-4" style={{ width: 72, minHeight: '80vh' }}>
+      <div className="flex flex-col gap-4 flex-1 w-full">
         {navigation.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.href;
@@ -59,28 +30,24 @@ const Sidebar: React.FC = () => {
               key={item.name}
               to={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                'flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200',
                 isActive
-                  ? "bg-cyan-600/20 text-cyan-400"
-                  : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+                  ? 'bg-[#FFD6DD] text-[#1A1A1A] shadow-md'
+                  : 'bg-white text-[#6B6B6B] hover:bg-[#E9E1FA] hover:text-[#1A1A1A]'
               )}
             >
-              <Icon className="w-5 h-5" />
-              {!collapsed && <span>{item.name}</span>}
+              <Icon className="w-6 h-6" />
             </Link>
           );
         })}
-      </nav>
-
-      {/* Footer */}
-      {!collapsed && (
-        <div className="p-4 border-t border-gray-700">
-          <div className="text-xs text-gray-400 text-center">
-            Version 2.0.0
-          </div>
+      </div>
+      {/* User Avatar at the bottom */}
+      <div className="mt-auto mb-2">
+        <div className="w-12 h-12 rounded-full shadow-lg border-4 border-[#FFE8A3] overflow-hidden">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" alt="User Avatar" className="w-full h-full object-cover" />
         </div>
-      )}
-    </div>
+      </div>
+    </aside>
   );
 };
 

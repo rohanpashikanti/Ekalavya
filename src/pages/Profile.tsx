@@ -200,11 +200,11 @@ const Profile: React.FC = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Profile</h1>
-            <p className="text-gray-400">Manage your account and track your progress</p>
+            <h1 className="text-3xl font-bold text-[#000000] mb-2">Profile</h1>
+            <p className="text-[#5C5C5C]">Manage your account and track your progress</p>
           </div>
           <Button 
-            className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
+            className="bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] hover:from-[#A0E9CE] hover:to-[#F9D3F3] text-[#000000] font-semibold rounded-xl shadow-none border-none"
             onClick={() => setIsEditDialogOpen(true)}
           >
             <Edit className="w-4 h-4 mr-2" />
@@ -215,33 +215,33 @@ const Profile: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Info */}
           <div className="lg:col-span-1 space-y-6">
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC] rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex flex-col items-center text-center space-y-4">
-                  <Avatar className="w-24 h-24">
-                    <AvatarFallback className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white text-2xl">
+                  <Avatar className="w-24 h-24 rounded-2xl">
+                    <AvatarFallback className="bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] text-[#5C5C5C] text-2xl">
                       {initials}
                     </AvatarFallback>
                   </Avatar>
                   
                   <div>
-                    <h2 className="text-2xl font-bold text-white">
+                    <h2 className="text-2xl font-bold text-[#000000]">
                       {username}
                     </h2>
-                    <p className="text-gray-400">{user?.email}</p>
+                    <p className="text-[#5C5C5C]">{user?.email}</p>
                   </div>
 
-                  <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
+                  <Badge className="bg-[#E1DDFC] text-[#7C6FF6] border-none rounded-xl font-semibold">
                     {getLevel()}
                   </Badge>
 
                   <div className="w-full space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Level Progress</span>
-                      <span className="text-white">{Math.round(getLevelProgress())}%</span>
+                      <span className="text-[#5C5C5C]">Level Progress</span>
+                      <span className="text-[#000000]">{Math.round(getLevelProgress())}%</span>
                     </div>
-                    <Progress value={getLevelProgress()} className="h-2" />
-                    <p className="text-xs text-gray-400">
+                    <Progress value={getLevelProgress()} className="h-2 bg-[#E1DDFC] rounded-xl" />
+                    <p className="text-xs text-[#5C5C5C]">
                       {getPointsToNextLevel()} points to next level
                     </p>
                   </div>
@@ -250,32 +250,32 @@ const Profile: React.FC = () => {
             </Card>
 
             {/* Quick Stats */}
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC] rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-white text-lg">Quick Stats</CardTitle>
+                <CardTitle className="text-[#000000] text-lg">Quick Stats</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <Trophy className="w-5 h-5 text-yellow-400" />
+                  <Trophy className="w-5 h-5 text-[#FFD966]" />
                   <div>
-                    <div className="text-white font-semibold">Total Score</div>
-                    <div className="text-gray-400">{userStats?.totalScore || 0}</div>
+                    <div className="text-[#000000] font-semibold">Total Score</div>
+                    <div className="text-[#5C5C5C]">{userStats?.totalScore || 0}</div>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <Target className="w-5 h-5 text-green-400" />
+                  <Target className="w-5 h-5 text-[#49DBA1]" />
                   <div>
-                    <div className="text-white font-semibold">Accuracy</div>
-                    <div className="text-gray-400">{(userStats?.accuracy || 0).toFixed(1)}%</div>
+                    <div className="text-[#000000] font-semibold">Accuracy</div>
+                    <div className="text-[#5C5C5C]">{(userStats?.accuracy || 0).toFixed(1)}%</div>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-3">
-                  <Calendar className="w-5 h-5 text-purple-400" />
+                  <Calendar className="w-5 h-5 text-[#B6EADA]" />
                   <div>
-                    <div className="text-white font-semibold">Member Since</div>
-                    <div className="text-gray-400">
+                    <div className="text-[#000000] font-semibold">Member Since</div>
+                    <div className="text-[#5C5C5C]">
                       {userStats?.joinDate ? new Date(userStats.joinDate).toLocaleDateString() : 'N/A'}
                     </div>
                   </div>
@@ -287,65 +287,65 @@ const Profile: React.FC = () => {
           {/* Detailed Stats */}
           <div className="lg:col-span-2 space-y-6">
             {/* Performance Overview */}
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC] rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-green-400" />
+                <CardTitle className="text-[#000000] flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-[#49DBA1]" />
                   Performance Overview
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-gray-700/30 rounded-lg">
-                    <div className="text-2xl font-bold text-cyan-400">{userStats.totalQuizzes}</div>
-                    <div className="text-sm text-gray-400">Total Quizzes</div>
+                  <div className="text-center p-4 bg-[#E1DDFC] rounded-xl">
+                    <div className="text-2xl font-bold text-[#000000]">{userStats.totalQuizzes}</div>
+                    <div className="text-sm text-[#5C5C5C]">Total Quizzes</div>
                   </div>
-                  <div className="text-center p-4 bg-gray-700/30 rounded-lg">
-                    <div className="text-2xl font-bold text-green-400">{userStats.currentStreak}</div>
-                    <div className="text-sm text-gray-400">Current Streak</div>
+                  <div className="text-center p-4 bg-[#E1DDFC] rounded-xl">
+                    <div className="text-2xl font-bold text-[#000000]">{userStats.currentStreak}</div>
+                    <div className="text-sm text-[#5C5C5C]">Current Streak</div>
                   </div>
-                  <div className="text-center p-4 bg-gray-700/30 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-400">{userStats.bestStreak}</div>
-                    <div className="text-sm text-gray-400">Best Streak</div>
+                  <div className="text-center p-4 bg-[#E1DDFC] rounded-xl">
+                    <div className="text-2xl font-bold text-[#000000]">{userStats.bestStreak}</div>
+                    <div className="text-sm text-[#5C5C5C]">Best Streak</div>
                   </div>
-                  <div className="text-center p-4 bg-gray-700/30 rounded-lg">
-                    <div className="text-2xl font-bold text-yellow-400">{userStats.accuracy.toFixed(1)}%</div>
-                    <div className="text-sm text-gray-400">Avg Accuracy</div>
+                  <div className="text-center p-4 bg-[#E1DDFC] rounded-xl">
+                    <div className="text-2xl font-bold text-[#000000]">{userStats.accuracy.toFixed(1)}%</div>
+                    <div className="text-sm text-[#5C5C5C]">Avg Accuracy</div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Category Performance */}
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC] rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-purple-400" />
+                <CardTitle className="text-[#000000] flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-[#B6EADA]" />
                   Category Performance
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {userStats.categoryStats.map((category) => (
-                    <div key={category.name} className="p-4 bg-gray-700/30 rounded-lg">
+                    <div key={category.name} className="p-4 bg-[#E1DDFC] rounded-xl">
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <h3 className="font-semibold text-white">{category.name}</h3>
-                          <p className="text-sm text-gray-400">{category.description}</p>
+                          <h3 className="font-semibold text-[#000000]">{category.name}</h3>
+                          <p className="text-sm text-[#5C5C5C]">{category.description}</p>
                         </div>
-                        <span className="text-sm text-gray-400">{category.completed} completed</span>
+                        <span className="text-sm text-[#5C5C5C]">{category.completed} completed</span>
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="text-gray-400">Accuracy: </span>
-                          <span className="text-green-400 font-semibold">{category.accuracy}%</span>
+                          <span className="text-[#5C5C5C]">Accuracy: </span>
+                          <span className="text-[#49DBA1] font-semibold">{category.accuracy}%</span>
                         </div>
                         <div>
-                          <span className="text-gray-400">Best Score: </span>
-                          <span className="text-cyan-400 font-semibold">{category.bestScore}</span>
+                          <span className="text-[#5C5C5C]">Best Score: </span>
+                          <span className="text-[#B6EADA] font-semibold">{category.bestScore}</span>
                         </div>
                       </div>
-                      <Progress value={category.accuracy} className="h-2 mt-2" />
+                      <Progress value={category.accuracy} className="h-2 mt-2 bg-[#F6F1EC] rounded-xl" />
                     </div>
                   ))}
                 </div>
@@ -353,13 +353,13 @@ const Profile: React.FC = () => {
             </Card>
 
             {/* Achievements */}
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC] rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Award className="w-5 h-5 text-yellow-400" />
+                <CardTitle className="text-[#000000] flex items-center gap-2">
+                  <Award className="w-5 h-5 text-[#FFD966]" />
                   Achievements
                 </CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardDescription className="text-[#5C5C5C]">
                   Your earned badges and milestones
                 </CardDescription>
               </CardHeader>
@@ -368,30 +368,30 @@ const Profile: React.FC = () => {
                   {userStats.achievements.map((achievement) => (
                     <div
                       key={achievement.name}
-                      className={`p-4 rounded-lg border ${
+                      className={`p-4 rounded-xl border transition-colors duration-200 ${
                         achievement.unlocked
-                          ? 'bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/30'
-                          : 'bg-gray-700/30 border-gray-600'
+                          ? 'bg-gradient-to-r from-[#FFD966]/20 to-[#F6C6EA]/20 border-[#FFD966]/30'
+                          : 'bg-[#E1DDFC] border-[#E1DDFC] opacity-60'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          achievement.unlocked ? 'bg-yellow-500/20' : 'bg-gray-600/20'
+                          achievement.unlocked ? 'bg-[#FFD966]/40' : 'bg-[#E1DDFC]'
                         }`}>
                           {achievement.unlocked ? (
-                            <CheckCircle2 className="w-5 h-5 text-yellow-400" />
+                            <CheckCircle2 className="w-5 h-5 text-[#FFD966]" />
                           ) : (
-                            <Award className="w-5 h-5 text-gray-500" />
+                            <Award className="w-5 h-5 text-[#B6EADA]" />
                           )}
                         </div>
                         <div>
                           <h3 className={`font-semibold ${
-                            achievement.unlocked ? 'text-white' : 'text-gray-500'
+                            achievement.unlocked ? 'text-[#000000]' : 'text-[#5C5C5C]'
                           }`}>
                             {achievement.name}
                           </h3>
                           <p className={`text-sm ${
-                            achievement.unlocked ? 'text-gray-300' : 'text-gray-500'
+                            achievement.unlocked ? 'text-[#5C5C5C]' : 'text-[#B6EADA]'
                           }`}>
                             {achievement.description}
                           </p>
@@ -399,6 +399,71 @@ const Profile: React.FC = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Weekly Progress */}
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC] rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-[#000000] flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-[#B6EADA]" />
+                  Weekly Progress
+                </CardTitle>
+                <CardDescription className="text-[#5C5C5C]">
+                  This Week's Goal: {Object.values(userStats.weeklyProgress).filter(Boolean).length}/7 days
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-7 gap-2">
+                  {Object.entries(userStats.weeklyProgress).map(([day, completed]) => (
+                    <div key={day} className="text-center">
+                      <div className={`w-full aspect-square rounded-xl flex items-center justify-center ${
+                        completed ? 'bg-[#49DBA1] text-white' : 'bg-[#E1DDFC] text-[#5C5C5C]'
+                      }`}>
+                        {day.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="text-xs text-[#5C5C5C] mt-1">{day.slice(0, 3)}</div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Statistics Overview */}
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC] rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-[#000000] flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-[#FFD966]" />
+                  Statistics Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-[#E1DDFC] rounded-xl">
+                    <div className="text-sm text-[#5C5C5C]">Current Streak</div>
+                    <div className="text-2xl font-bold text-[#000000]">{userStats.currentStreak}</div>
+                  </div>
+                  <div className="p-4 bg-[#E1DDFC] rounded-xl">
+                    <div className="text-sm text-[#5C5C5C]">Best Streak</div>
+                    <div className="text-2xl font-bold text-[#000000]">{userStats.bestStreak}</div>
+                  </div>
+                  <div className="p-4 bg-[#E1DDFC] rounded-xl">
+                    <div className="text-sm text-[#5C5C5C]">Total Quizzes</div>
+                    <div className="text-2xl font-bold text-[#000000]">{userStats.totalQuizzes}</div>
+                  </div>
+                  <div className="p-4 bg-[#E1DDFC] rounded-xl">
+                    <div className="text-sm text-[#5C5C5C]">Accuracy</div>
+                    <div className="text-2xl font-bold text-[#000000]">{userStats.accuracy.toFixed(1)}%</div>
+                  </div>
+                  <div className="p-4 bg-[#E1DDFC] rounded-xl">
+                    <div className="text-sm text-[#5C5C5C]">High Score</div>
+                    <div className="text-2xl font-bold text-[#000000]">{userStats.bestScore}/20</div>
+                  </div>
+                  <div className="p-4 bg-[#E1DDFC] rounded-xl">
+                    <div className="text-sm text-[#5C5C5C]">Avg. Time</div>
+                    <div className="text-2xl font-bold text-[#000000]">{Math.round(userStats.avgTime / 60)}m</div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

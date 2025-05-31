@@ -217,33 +217,25 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
 
   if (!examStarted) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        <Card className="w-full max-w-md p-6 bg-gray-800/50 backdrop-blur-lg border border-gray-700">
-          <CardHeader>
-            <div className="flex flex-col space-y-4">
-              <Button 
-                variant="outline" 
-                onClick={() => window.location.href = '/quiz'}
-                className="w-fit border-gray-600 text-gray-200 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
-              >
-                ← Back to Quiz
-              </Button>
-              <CardTitle className="text-2xl font-bold text-white">Daily Challenge</CardTitle>
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="w-full max-w-md">
+          <button
+            className="mb-4 category-btn"
+            onClick={() => window.history.back()}
+          >
+            ← Back to Quiz
+          </button>
+          <div className="rounded-card soft-shadow p-8 flex flex-col gap-4 card-business">
+            <div className="heading-hero mb-2">Daily Challenge</div>
+            <div className="text-2xl font-medium mb-4" style={{ color: '#5C5C5C' }}>
+              Test your aptitude skills with this daily challenge covering various topics including Arithmetic, Logical Reasoning, and more.
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4 text-gray-400">
-              <p className="mb-4">Test your aptitude skills with this daily challenge covering various topics including Arithmetic, Logical Reasoning, and more.</p>
-              <div>You will get {TOTAL_QUESTIONS} MCQ questions and {TOTAL_TIME / 60} minutes to complete the exam.</div>
+            <div className="text-base mb-4" style={{ color: '#5C5C5C' }}>
+              You will get 25 MCQ questions and 50 minutes to complete the exam.
             </div>
-            <Button 
-              className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
-              onClick={handleStartExam}
-            >
-              Start Daily Challenge
-            </Button>
-          </CardContent>
-        </Card>
+            <button className="category-btn active w-full" onClick={handleStartExam}>Start Daily Challenge</button>
+          </div>
+        </div>
       </div>
     );
   }

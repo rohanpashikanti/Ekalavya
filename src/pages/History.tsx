@@ -11,8 +11,8 @@ import './History.css';
 const History: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const userData = user ? getUserData(user.id) : null;
-  const recentQuizzes = user ? getRecentQuizzes(user.id) : [];
+  const userData = user ? getUserData(user.uid) : null;
+  const recentQuizzes = user ? getRecentQuizzes(user.uid) : [];
 
   // Separate daily quizzes from regular quizzes
   const dailyQuizzes = recentQuizzes.filter(quiz => quiz.topic === 'Daily Challenge');
@@ -40,77 +40,77 @@ const History: React.FC = () => {
         <div className="space-y-6">
           {/* Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-400">Total Quizzes</CardTitle>
-                <Brain className="h-4 w-4 text-gray-400" />
+                <CardTitle className="text-sm font-medium text-[#5C5C5C]">Total Quizzes</CardTitle>
+                <Brain className="h-4 w-4 text-[#5C5C5C]" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">{userData.totalQuizzes}</div>
+                <div className="text-2xl font-bold text-[#000000]">{userData.totalQuizzes}</div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-400">Avg. Score</CardTitle>
-                <Target className="h-4 w-4 text-gray-400" />
+                <CardTitle className="text-sm font-medium text-[#5C5C5C]">Avg. Score</CardTitle>
+                <Target className="h-4 w-4 text-[#5C5C5C]" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">{userData.avgScore.toFixed(1)}%</div>
+                <div className="text-2xl font-bold text-[#000000]">{userData.avgScore.toFixed(1)}%</div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-400">Avg. Time</CardTitle>
-                <Clock className="h-4 w-4 text-gray-400" />
+                <CardTitle className="text-sm font-medium text-[#5C5C5C]">Avg. Time</CardTitle>
+                <Clock className="h-4 w-4 text-[#5C5C5C]" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">{Math.round(userData.avgTime / 60)}m</div>
+                <div className="text-2xl font-bold text-[#000000]">{Math.round(userData.avgTime / 60)}m</div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-400">Best Score</CardTitle>
-                <Trophy className="h-4 w-4 text-gray-400" />
+                <CardTitle className="text-sm font-medium text-[#5C5C5C]">Best Score</CardTitle>
+                <Trophy className="h-4 w-4 text-[#5C5C5C]" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">{userData.bestScore}/20</div>
+                <div className="text-2xl font-bold text-[#000000]">{userData.bestScore}/20</div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-400">Daily Challenges</CardTitle>
-                <Calendar className="h-4 w-4 text-gray-400" />
+                <CardTitle className="text-sm font-medium text-[#5C5C5C]">Daily Challenges</CardTitle>
+                <Calendar className="h-4 w-4 text-[#5C5C5C]" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-white">{dailyQuizzes.length}</div>
+                <div className="text-2xl font-bold text-[#000000]">{dailyQuizzes.length}</div>
               </CardContent>
             </Card>
           </div>
 
           {/* Daily Challenge History */}
           {dailyQuizzes.length > 0 && (
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC]">
               <CardHeader>
-                <CardTitle className="text-xl font-bold text-white">Daily Challenge History</CardTitle>
+                <CardTitle className="text-xl font-bold text-[#000000]">Daily Challenge History</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                   <div className="space-y-4">
                     {dailyQuizzes.map((quiz, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
+                      <div key={index} className="flex items-center justify-between p-4 bg-[#E1DDFC] rounded-lg">
                         <div>
-                          <h3 className="font-medium text-white">Daily Challenge</h3>
-                          <p className="text-sm text-gray-400">
+                          <h3 className="font-medium text-[#000000]">Daily Challenge</h3>
+                          <p className="text-sm text-[#5C5C5C]">
                             {new Date(quiz.date).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="text-right">
-                          <div className="font-medium text-white">{quiz.score}/25</div>
-                          <div className="text-sm text-gray-400">{Math.round(quiz.timeTaken / 60)}m</div>
+                          <div className="font-medium text-[#000000]">{quiz.score}/25</div>
+                          <div className="text-sm text-[#5C5C5C]">{Math.round(quiz.timeTaken / 60)}m</div>
                         </div>
                       </div>
                     ))}
@@ -121,25 +121,25 @@ const History: React.FC = () => {
           )}
 
           {/* Regular Quiz History */}
-          <Card className="bg-gray-800/50 border-gray-700">
+          <Card className="bg-[#F6F1EC] border-[#E1DDFC]">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-white">Regular Quiz History</CardTitle>
+              <CardTitle className="text-xl font-bold text-[#000000]">Regular Quiz History</CardTitle>
             </CardHeader>
             <CardContent>
               {regularQuizzes.length > 0 ? (
                 <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                   <div className="space-y-4">
                     {regularQuizzes.map((quiz, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
+                      <div key={index} className="flex items-center justify-between p-4 bg-[#E1DDFC] rounded-lg">
                         <div>
-                          <h3 className="font-medium text-white">{quiz.topic}</h3>
-                          <p className="text-sm text-gray-400">
+                          <h3 className="font-medium text-[#000000]">{quiz.topic}</h3>
+                          <p className="text-sm text-[#5C5C5C]">
                             {new Date(quiz.date).toLocaleDateString()}
                           </p>
                         </div>
                         <div className="text-right">
-                          <div className="font-medium text-white">{quiz.score}/20</div>
-                          <div className="text-sm text-gray-400">{Math.round(quiz.timeTaken / 60)}m</div>
+                          <div className="font-medium text-[#000000]">{quiz.score}/20</div>
+                          <div className="text-sm text-[#5C5C5C]">{Math.round(quiz.timeTaken / 60)}m</div>
                         </div>
                       </div>
                     ))}
@@ -147,8 +147,8 @@ const History: React.FC = () => {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-400 mb-4">No quiz history found</p>
-                  <Button onClick={() => navigate('/quiz')} className="bg-cyan-600 hover:bg-cyan-700">
+                  <p className="text-[#5C5C5C] mb-4">No quiz history found</p>
+                  <Button onClick={() => navigate('/quiz')} className="bg-[#49DBA1] hover:bg-[#3BCA8F]">
                     Take Your First Quiz
                   </Button>
                 </div>
@@ -157,21 +157,21 @@ const History: React.FC = () => {
           </Card>
 
           {/* Weekly Progress */}
-          <Card className="bg-gray-800/50 border-gray-700">
+          <Card className="bg-[#F6F1EC] border-[#E1DDFC]">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-white">Weekly Progress</CardTitle>
+              <CardTitle className="text-xl font-bold text-[#000000]">Weekly Progress</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <div className="text-2xl font-bold text-white">
+                  <div className="text-2xl font-bold text-[#000000]">
                     {Object.values(userData.weeklyProgress).filter(Boolean).length}/7
                   </div>
-                  <div className="text-sm text-gray-400">This Week's Goal</div>
+                  <div className="text-sm text-[#5C5C5C]">This Week's Goal</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-white">{userData.currentStreak}</div>
-                  <div className="text-sm text-gray-400">Current Streak</div>
+                  <div className="text-2xl font-bold text-[#000000]">{userData.currentStreak}</div>
+                  <div className="text-sm text-[#5C5C5C]">Current Streak</div>
                 </div>
               </div>
               <div className="grid grid-cols-7 gap-2">
@@ -180,8 +180,8 @@ const History: React.FC = () => {
                     key={day}
                     className={`aspect-square rounded-lg flex items-center justify-center text-sm font-medium ${
                       completed
-                        ? 'bg-cyan-600 text-white'
-                        : 'bg-gray-700 text-gray-400'
+                        ? 'bg-[#49DBA1] text-white'
+                        : 'bg-[#E1DDFC] text-[#5C5C5C]'
                     }`}
                   >
                     {day.charAt(0).toUpperCase()}
