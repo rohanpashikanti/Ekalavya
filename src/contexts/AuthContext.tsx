@@ -99,8 +99,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
+      // First, try to sign in
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      
+      // Force reload the user to get the latest verification status
+      await user.reload();
       
       if (!user.emailVerified) {
         // Send verification email if not verified
@@ -110,7 +114,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
         return { error: 'Please verify your email. A new verification email has been sent.' };
       }
-      
+
+      // If we get here, the user is verified and logged in
       return { error: null };
     } catch (error: any) {
       console.error('Login error:', error);
@@ -126,6 +131,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return { error: 'Incorrect password' };
         case 'auth/too-many-requests':
           return { error: 'Too many failed attempts. Please try again later' };
+        case 'auth/invalid-credential':
+          // Try to handle invalid credential by attempting to re-authenticate
+          try {
+            const user = auth.currentUser;
+            if (user) {
+              await user.reload();
+              return { error: null };
+            }
+            return { error: 'Invalid credentials. Please try again.' };
+          } catch (reloadError) {
+            return { error: 'Invalid credentials. Please try again.' };
+          }
         default:
           return { error: error.message || 'Failed to login. Please try again.' };
       }

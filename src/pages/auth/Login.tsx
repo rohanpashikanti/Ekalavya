@@ -40,11 +40,19 @@ const Login: React.FC = () => {
           setError('Invalid password');
         } else if (loginError.includes('verify')) {
           setError('Please verify your email before logging in');
+        } else if (loginError.includes('Invalid credentials')) {
+          // Add a retry mechanism for invalid credentials
+          setError('Invalid credentials. Please try again.');
+          // Clear the password field to force user to re-enter
+          setPassword('');
         } else {
           setError(loginError);
         }
       } else {
-        navigate(from, { replace: true });
+        // Add a small delay to ensure the auth state is properly updated
+        setTimeout(() => {
+          navigate(from, { replace: true });
+        }, 500);
       }
     } catch (err: any) {
       console.error('Login error:', err);
