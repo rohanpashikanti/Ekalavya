@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
@@ -18,6 +18,16 @@ const Sidebar: React.FC = () => {
     { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
     { name: 'Profile', href: '/profile', icon: User },
   ];
+
+  const [avatar, setAvatar] = useState<string>('');
+
+  useEffect(() => {
+    // Load user's avatar from storage
+    const savedAvatar = localStorage.getItem('userAvatar');
+    if (savedAvatar) {
+      setAvatar(savedAvatar);
+    }
+  }, []);
 
   return (
     <aside className="fixed top-8 left-8 z-30 flex flex-col items-center bg-white rounded-3xl shadow-xl py-6 px-2 gap-4" style={{ width: 72, minHeight: '80vh' }}>
@@ -44,7 +54,19 @@ const Sidebar: React.FC = () => {
       {/* User Avatar at the bottom */}
       <div className="mt-auto mb-2">
         <div className="w-12 h-12 rounded-full shadow-lg border-4 border-[#FFE8A3] overflow-hidden">
-          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" alt="User Avatar" className="w-full h-full object-cover" />
+          {avatar ? (
+            <img 
+              src={avatar} 
+              alt="User Avatar" 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <img 
+              src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" 
+              alt="User Avatar" 
+              className="w-full h-full object-cover"
+            />
+          )}
         </div>
       </div>
     </aside>

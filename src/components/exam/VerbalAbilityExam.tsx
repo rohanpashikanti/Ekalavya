@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, BookmarkCheck } from 'lucide-react';
+import { RefreshCw, BookmarkCheck, Bookmark } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import {
@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import EndTestDialog from './EndTestDialog';
 
 interface ReadingComprehension {
   paragraph: string;
@@ -254,10 +255,10 @@ Return ONLY a valid JSON object, no other text.`;
           >
             ← Back to Quiz
           </button>
-          <div className="rounded-card soft-shadow p-8 flex flex-col gap-4 card-media">
-            <div className="heading-hero mb-2">Verbal Ability Exam</div>
+          <div className="rounded-card soft-shadow p-8 flex flex-col gap-4 card-business">
+            <div className="heading-hero mb-2">Verbal Ability</div>
             <div className="text-2xl font-medium mb-4" style={{ color: '#5C5C5C' }}>
-              This exam covers:
+              Test your verbal skills with this exam covering:
               <ul className="list-disc ml-6 mt-2 text-base">
                 <li>Reading Comprehension</li>
                 <li>Grammar</li>
@@ -265,7 +266,7 @@ Return ONLY a valid JSON object, no other text.`;
               </ul>
             </div>
             <div className="text-base mb-4" style={{ color: '#5C5C5C' }}>
-              You will get 20 MCQ questions and 25 minutes to complete the test.
+              You will get 20 MCQ questions and 40 minutes to complete the exam.
             </div>
             <button className="category-btn active w-full" onClick={handleStartExam}>Start Exam</button>
           </div>
@@ -297,41 +298,44 @@ Return ONLY a valid JSON object, no other text.`;
 
   if (showResults) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8">
-        <Card className="max-w-3xl mx-auto p-6 bg-gray-800/50 backdrop-blur-lg border border-gray-700">
+      <div className="min-h-screen bg-gradient-to-br from-[#B6EADA] via-[#E1DDFC] to-[#F6C6EA] py-8">
+        <Card className="max-w-3xl mx-auto p-6 bg-white/80 backdrop-blur-lg border border-[#E1DDFC] shadow-lg">
           <CardHeader>
             <div className="flex flex-col space-y-4">
               <Button 
                 variant="outline" 
                 onClick={() => window.location.href = '/dashboard'}
-                className="w-fit border-gray-600 text-gray-200 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
+                className="w-fit border-[#E1DDFC] text-[#5C5C5C] hover:bg-[rgb(204,220,251)] hover:border-[rgb(204,220,251)] hover:text-[#000000]"
               >
                 ← Back to Dashboard
               </Button>
-              <CardTitle className="text-2xl font-bold text-white">Exam Results</CardTitle>
+              <CardTitle className="text-2xl font-bold text-[#000000]">Verbal Ability Results</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="text-xl font-semibold text-white">Your Score: {score} / {questions.length}</div>
+              <div className="text-xl font-semibold text-[#000000]">Your Score: {score} / {questions.length}</div>
               {questions.map((q, idx) => (
-                <div key={idx} className="p-3 border border-gray-700 rounded bg-gray-800/50">
+                <div key={idx} className="p-3 border border-[#E1DDFC] rounded bg-white/50">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-white">Q.{idx + 1}</span>
-                    <span className="text-xs bg-gray-700 px-2 py-0.5 rounded text-gray-300">MCQ</span>
-                    {q.markedForReview && <BookmarkCheck className="w-4 h-4 text-purple-500" />}
+                    <span className="font-medium text-[#000000]">Q.{idx + 1}</span>
+                    <span className="text-xs bg-[#E1DDFC] px-2 py-0.5 rounded text-[#5C5C5C]">MCQ</span>
+                    {q.markedForReview && <BookmarkCheck className="w-4 h-4 text-[#F6C6EA]" />}
                   </div>
-                  <div className="text-gray-300 mb-2">{q.question}</div>
+                  {q.paragraph && (
+                    <div className="text-[#5C5C5C] mb-2 italic">{q.paragraph}</div>
+                  )}
+                  <div className="text-[#5C5C5C] mb-2">{q.question}</div>
                   <div>
-                    <span className="font-semibold text-gray-400">Your answer: </span>
+                    <span className="font-semibold text-[#000000]">Your answer: </span>
                     {q.userAnswer ? (
-                      <span className="text-gray-300">
+                      <span className="text-[#5C5C5C]">
                         {String.fromCharCode(65 + q.options.indexOf(q.userAnswer))}. {q.userAnswer}
                       </span>
                     ) : (
-                      <span className="text-gray-500">Not answered</span>
+                      <span className="text-[#5C5C5C]">Not answered</span>
                     )}
-                    <span className="ml-2 text-xs text-blue-400">
+                    <span className="ml-2 text-xs text-[#B6EADA]">
                       (Correct: {String.fromCharCode(65 + q.options.indexOf(q.correctAnswer))}. {q.correctAnswer})
                     </span>
                   </div>
@@ -345,169 +349,126 @@ Return ONLY a valid JSON object, no other text.`;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <Dialog open={showEndDialog} onOpenChange={setShowEndDialog}>
-        <DialogContent className="bg-gray-800/50 backdrop-blur-lg border border-gray-700 max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-white mb-2">End Test</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              <div className="space-y-6">
-                <p className="text-base">Are you sure you want to end the test? You cannot return to the test once ended.</p>
-                
-                <div className="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-green-900/50 flex items-center justify-center">
-                          <span className="text-green-400 font-semibold">{getAttemptedCount()}</span>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-400">Questions Attempted</p>
-                          <p className="text-lg font-semibold text-green-400">{getAttemptedCount()} / {questions.length}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-red-900/50 flex items-center justify-center">
-                          <span className="text-red-400 font-semibold">{getRemainingCount()}</span>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-400">Questions Remaining</p>
-                          <p className="text-lg font-semibold text-red-400">{getRemainingCount()} / {questions.length}</p>
-                        </div>
-                      </div>
-                    </div>
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Verbal Ability</h1>
+        <div className="text-lg font-semibold">
+          Time Left: {min}:{sec}
+        </div>
+      </div>
 
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-purple-900/50 flex items-center justify-center">
-                        <span className="text-purple-400 font-semibold text-sm">{min}:{sec}</span>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-400">Time Remaining</p>
-                        <p className="text-lg font-semibold text-purple-400">{min}:{sec}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="md:col-span-3">
+          <Card className="mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-sm bg-gray-200 px-2 py-0.5 rounded text-black">
+                  {currentQuestion < READING_COMP_QUESTIONS ? 'Reading Comprehension' :
+                   currentQuestion < READING_COMP_QUESTIONS + GRAMMAR_QUESTIONS ? 'Grammar' : 'Vocabulary'}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleMarkForReview}
+                  className="ml-auto"
+                >
+                  {questions[currentQuestion]?.markedForReview ? (
+                    <BookmarkCheck className="w-4 h-4 text-purple-500" />
+                  ) : (
+                    <Bookmark className="w-4 h-4" />
+                  )}
+                </Button>
               </div>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="mt-6">
-            <Button
-              variant="outline"
-              onClick={handleCancelEndTest}
-              className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
-            >
-              Continue Test
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleConfirmEndTest}
-              className="flex-1"
-            >
-              End Test
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <div className="flex flex-col h-screen">
-        <div className="flex-1 flex flex-row">
-          <div className="w-64 border-r border-gray-700 bg-gray-800/50 p-4">
-            <div className="mb-4">
-              <div className="text-sm font-medium mb-2 text-gray-300">Time Left: {min}:{sec}</div>
-              <div className="grid grid-cols-5 gap-2">
-                {questions.map((q, idx) => (
-                  <button
+              {questions[currentQuestion]?.paragraph && (
+                <div className="text-gray-700 mb-6 italic">{questions[currentQuestion].paragraph}</div>
+              )}
+              <div className="text-lg mb-6">
+                Q.{currentQuestion + 1}. {questions[currentQuestion]?.question}
+              </div>
+              <div className="space-y-3">
+                {questions[currentQuestion]?.options.map((option, idx) => (
+                  <Button
                     key={idx}
-                    onClick={() => handleNav(idx)}
-                    className={`p-2 text-sm rounded ${
-                      idx === currentQuestion
-                        ? 'bg-blue-500 text-white'
-                        : getStatus(q) === 'answered'
-                        ? 'bg-green-900/50 text-green-400'
-                        : getStatus(q) === 'marked'
-                        ? 'bg-purple-900/50 text-purple-400'
-                        : getStatus(q) === 'answered-marked'
-                        ? 'bg-purple-900/50 text-purple-400'
-                        : 'bg-gray-700 text-gray-300'
+                    variant={questions[currentQuestion]?.userAnswer === option ? "default" : "outline"}
+                    className={`w-full justify-start ${
+                      questions[currentQuestion]?.userAnswer === option 
+                        ? 'bg-[rgb(204,220,251)] text-[#000000] hover:bg-[rgb(204,220,251)] hover:text-[#000000]' 
+                        : 'border-[#E1DDFC] text-[#5C5C5C] hover:bg-[rgb(204,220,251)] hover:border-[rgb(204,220,251)] hover:text-[#000000]'
                     }`}
+                    onClick={() => handleMCQ(option)}
                   >
-                    {idx + 1}
-                  </button>
+                    {String.fromCharCode(65 + idx)}. {option}
+                  </Button>
                 ))}
               </div>
-            </div>
-            <div className="space-y-2">
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={() => handleNav(currentQuestion - 1)}
+              disabled={currentQuestion === 0}
+              className="bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] hover:from-[#A0E9CE] hover:to-[#F9D3F3] text-[#000000] font-semibold"
+            >
+              Previous
+            </Button>
+            <Button
+              onClick={() => handleNav(currentQuestion + 1)}
+              disabled={currentQuestion === questions.length - 1}
+              className="bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] hover:from-[#A0E9CE] hover:to-[#F9D3F3] text-[#000000] font-semibold"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+
+        <div className="md:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle>Question Navigator</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-5 gap-2">
+                {questions.map((q, idx) => (
+                  <Button
+                    key={idx}
+                    variant="outline"
+                    size="sm"
+                    className={`w-full ${
+                      currentQuestion === idx 
+                        ? 'border-2 border-[#B6EADA] bg-[#B6EADA] text-[#000000]' 
+                        : getStatus(q) === 'answered' 
+                          ? 'bg-[#B6EADA] text-[#000000] border-[#B6EADA]' 
+                          : getStatus(q) === 'marked' 
+                            ? 'bg-[#FFD966] text-[#000000] border-[#FFD966]' 
+                            : getStatus(q) === 'answered-marked' 
+                              ? 'bg-[#F6C6EA] text-[#000000] border-[#F6C6EA]' 
+                              : 'bg-[#E1DDFC] text-[#5C5C5C] border-[#E1DDFC]'
+                    } hover:bg-[rgb(204,220,251)] hover:border-[rgb(204,220,251)] hover:text-[#000000]`}
+                    onClick={() => handleNav(idx)}
+                  >
+                    {idx + 1}
+                  </Button>
+                ))}
+              </div>
               <Button
-                variant="outline"
-                className="w-full border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-purple-500 hover:text-purple-400"
-                onClick={toggleMarkForReview}
-              >
-                {questions[currentQuestion]?.markedForReview ? 'Unmark for Review' : 'Mark for Review'}
-              </Button>
-              <Button
-                variant="destructive"
-                className="w-full"
+                className="w-full mt-4 bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] hover:from-[#A0E9CE] hover:to-[#F9D3F3] text-[#000000] font-semibold"
                 onClick={handleEndTest}
               >
                 End Test
               </Button>
-            </div>
-          </div>
-          <div className="flex-1 flex flex-col">
-            <div className="flex items-center justify-between border-b border-gray-700 px-8 py-4 bg-gray-800/50">
-              <div className="font-bold text-lg text-white">Q.{currentQuestion + 1}</div>
-              <div className="flex items-center gap-4">
-                <span className="bg-gray-700 px-3 py-1 rounded text-sm text-gray-300">MCQ</span>
-                <span className="bg-purple-900/50 px-3 py-1 rounded text-purple-400 font-semibold">{min}:{sec}</span>
-              </div>
-            </div>
-            <div className="flex-1 flex flex-col justify-center items-center px-8 bg-gray-900/50">
-              {questions[currentQuestion]?.paragraph && (
-                <div className="w-full max-w-3xl mb-8 p-6 bg-gray-800/50 rounded-lg border border-gray-700">
-                  <div className="text-gray-300 leading-relaxed">{questions[currentQuestion].paragraph}</div>
-                </div>
-              )}
-              <div className="text-xl font-semibold mb-4 text-white">{questions[currentQuestion]?.question}</div>
-              {questions[currentQuestion]?.options && (
-                <div className="space-y-2 w-full max-w-md">
-                  {questions[currentQuestion].options.map((opt, i) => (
-                    <button
-                      key={i}
-                      className={`option-btn${questions[currentQuestion].userAnswer === opt ? ' selected' : ''}`}
-                      onClick={() => handleMCQ(opt)}
-                      type="button"
-                    >
-                      <div className="flex items-start gap-2">
-                        <span className="font-semibold shrink-0">{String.fromCharCode(65 + i)}.</span>
-                        <span className="text-left">{opt}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div className="flex justify-between w-full max-w-md mt-8">
-                <Button
-                  variant="outline"
-                  className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
-                  onClick={() => handleNav(Math.max(0, currentQuestion - 1))}
-                  disabled={currentQuestion === 0}
-                >
-                  ← Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
-                  onClick={() => handleNav(Math.min(questions.length - 1, currentQuestion + 1))}
-                  disabled={currentQuestion === questions.length - 1}
-                >
-                  Next →
-                </Button>
-              </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+      <EndTestDialog
+        isOpen={showEndDialog}
+        onClose={() => setShowEndDialog(false)}
+        onConfirm={handleConfirmEndTest}
+        attemptedQuestions={questions.filter(q => q.userAnswer).length}
+        totalQuestions={questions.length}
+      />
     </div>
   );
 };

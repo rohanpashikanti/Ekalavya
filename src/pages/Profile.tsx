@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import AvatarUpload from '@/components/profile/AvatarUpload';
 import { 
   User, 
   Mail, 
@@ -26,9 +27,23 @@ const Profile: React.FC = () => {
   const [userStats, setUserStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [avatar, setAvatar] = useState<string>('');
   const userData = user ? getUserData(user.uid) : null;
   const username = userData?.username || user?.displayName || 'User';
   const initials = username.split(' ').map(n => n[0]).join('').toUpperCase();
+
+  useEffect(() => {
+    // Load user's avatar from storage
+    const savedAvatar = localStorage.getItem('userAvatar');
+    if (savedAvatar) {
+      setAvatar(savedAvatar);
+    }
+  }, []);
+
+  const handleAvatarChange = (newAvatarUrl: string) => {
+    setAvatar(newAvatarUrl);
+    localStorage.setItem('userAvatar', newAvatarUrl);
+  };
 
   const loadUserData = () => {
     if (user) {
@@ -218,11 +233,20 @@ const Profile: React.FC = () => {
             <Card className="bg-[#F6F1EC] border-[#E1DDFC] rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex flex-col items-center text-center space-y-4">
-                  <Avatar className="w-24 h-24 rounded-2xl">
-                    <AvatarFallback className="bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] text-[#5C5C5C] text-2xl">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="relative">
+                    <AvatarUpload 
+                      currentAvatar={avatar}
+                      onAvatarChange={handleAvatarChange}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute bottom-0 right-0 bg-white rounded-full shadow-md hover:bg-gray-100"
+                      onClick={() => setIsEditDialogOpen(true)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  </div>
                   
                   <div>
                     <h2 className="text-2xl font-bold text-[#000000]">

@@ -263,41 +263,41 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
 
   if (showResults) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8">
-        <Card className="max-w-3xl mx-auto p-6 bg-gray-800/50 backdrop-blur-lg border border-gray-700">
+      <div className="min-h-screen bg-gradient-to-br from-[#B6EADA] via-[#E1DDFC] to-[#F6C6EA] py-8">
+        <Card className="max-w-3xl mx-auto p-6 bg-white/80 backdrop-blur-lg border border-[#E1DDFC] shadow-lg">
           <CardHeader>
             <div className="flex flex-col space-y-4">
               <Button 
                 variant="outline" 
                 onClick={() => window.location.href = '/dashboard'}
-                className="w-fit border-gray-600 text-gray-200 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
+                className="w-fit border-[#E1DDFC] text-[#5C5C5C] hover:bg-[rgb(204,220,251)] hover:border-[rgb(204,220,251)] hover:text-[#000000]"
               >
                 ← Back to Dashboard
               </Button>
-              <CardTitle className="text-2xl font-bold text-white">Daily Challenge Results</CardTitle>
+              <CardTitle className="text-2xl font-bold text-[#000000]">Daily Challenge Results</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="text-xl font-semibold text-white">Your Score: {score} / {questions.length}</div>
+              <div className="text-xl font-semibold text-[#000000]">Your Score: {score} / {questions.length}</div>
               {questions.map((q, idx) => (
-                <div key={idx} className="p-3 border border-gray-700 rounded bg-gray-800/50">
+                <div key={idx} className="p-3 border border-[#E1DDFC] rounded bg-white/50">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-white">Q.{idx + 1}</span>
-                    <span className="text-xs bg-gray-700 px-2 py-0.5 rounded text-gray-300">MCQ</span>
-                    {q.markedForReview && <BookmarkCheck className="w-4 h-4 text-purple-500" />}
+                    <span className="font-medium text-[#000000]">Q.{idx + 1}</span>
+                    <span className="text-xs bg-[#E1DDFC] px-2 py-0.5 rounded text-[#5C5C5C]">MCQ</span>
+                    {q.markedForReview && <BookmarkCheck className="w-4 h-4 text-[#F6C6EA]" />}
                   </div>
-                  <div className="text-gray-300 mb-2">{q.question}</div>
+                  <div className="text-[#5C5C5C] mb-2">{q.question}</div>
                   <div>
-                    <span className="font-semibold text-gray-400">Your answer: </span>
+                    <span className="font-semibold text-[#000000]">Your answer: </span>
                     {q.userAnswer ? (
-                      <span className="text-gray-300">
+                      <span className="text-[#5C5C5C]">
                         {String.fromCharCode(65 + q.options.indexOf(q.userAnswer))}. {q.userAnswer}
                       </span>
                     ) : (
-                      <span className="text-gray-500">Not answered</span>
+                      <span className="text-[#5C5C5C]">Not answered</span>
                     )}
-                    <span className="ml-2 text-xs text-blue-400">
+                    <span className="ml-2 text-xs text-[#B6EADA]">
                       (Correct: {String.fromCharCode(65 + q.options.indexOf(q.correctAnswer))}. {q.correctAnswer})
                     </span>
                   </div>
@@ -346,7 +346,11 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
                   <Button
                     key={idx}
                     variant={questions[currentQuestion]?.userAnswer === option ? "default" : "outline"}
-                    className="w-full justify-start"
+                    className={`w-full justify-start ${
+                      questions[currentQuestion]?.userAnswer === option 
+                        ? 'bg-[rgb(204,220,251)] text-[#000000] hover:bg-[rgb(204,220,251)] hover:text-[#000000]' 
+                        : 'border-[#E1DDFC] text-[#5C5C5C] hover:bg-[rgb(204,220,251)] hover:border-[rgb(204,220,251)] hover:text-[#000000]'
+                    }`}
                     onClick={() => handleMCQ(option)}
                   >
                     {String.fromCharCode(65 + idx)}. {option}
@@ -386,12 +390,16 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
                     variant="outline"
                     size="sm"
                     className={`w-full ${
-                      currentQuestion === idx ? 'border-2 border-primary' : ''
-                    } ${
-                      getStatus(q) === 'answered' ? 'bg-green-100 text-black' :
-                      getStatus(q) === 'marked' ? 'bg-yellow-100 text-black' :
-                      getStatus(q) === 'answered-marked' ? 'bg-purple-100 text-black' : ''
-                    }`}
+                      currentQuestion === idx 
+                        ? 'border-2 border-[#B6EADA] bg-[#B6EADA] text-[#000000]' 
+                        : getStatus(q) === 'answered' 
+                          ? 'bg-[#B6EADA] text-[#000000] border-[#B6EADA]' 
+                          : getStatus(q) === 'marked' 
+                            ? 'bg-[#FFD966] text-[#000000] border-[#FFD966]' 
+                            : getStatus(q) === 'answered-marked' 
+                              ? 'bg-[#F6C6EA] text-[#000000] border-[#F6C6EA]' 
+                              : 'bg-[#E1DDFC] text-[#5C5C5C] border-[#E1DDFC]'
+                    } hover:bg-[rgb(204,220,251)] hover:border-[rgb(204,220,251)] hover:text-[#000000]`}
                     onClick={() => handleNav(idx)}
                   >
                     {idx + 1}
@@ -399,7 +407,7 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
                 ))}
               </div>
               <Button
-                className="w-full mt-4"
+                className="w-full mt-4 bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] hover:from-[#A0E9CE] hover:to-[#F9D3F3] text-[#000000] font-semibold"
                 onClick={handleEndTest}
               >
                 End Test

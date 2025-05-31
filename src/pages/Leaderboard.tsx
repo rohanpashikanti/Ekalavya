@@ -36,7 +36,7 @@ const Leaderboard: React.FC = () => {
       setLeaderboard(leaderboardData);
 
       // Find current user's rank
-      const currentUserRank = leaderboardData.find(item => item.user_id === user?.id)?.rank;
+      const currentUserRank = leaderboardData.find(item => item.user_id === user?.uid)?.rank;
       setUserRank(currentUserRank || null);
 
     } catch (error) {
@@ -87,11 +87,11 @@ const Leaderboard: React.FC = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Leaderboard</h1>
-            <p className="text-gray-400">Top performers in aptitude tests</p>
+            <h1 className="text-3xl font-bold text-[#000000] mb-2">Leaderboard</h1>
+            <p className="text-[#5C5C5C]">Top performers in aptitude tests</p>
           </div>
           {userRank && (
-            <Badge variant="outline" className="border-cyan-500 text-cyan-400">
+            <Badge variant="outline" className="border-[#E1DDFC] text-[#5C5C5C]">
               Your Rank: #{userRank}
             </Badge>
           )}
@@ -101,69 +101,69 @@ const Leaderboard: React.FC = () => {
         {leaderboard.length >= 3 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* 2nd Place */}
-            <Card className={`bg-gradient-to-br ${getRankColor(2)} order-1 md:order-1`}>
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC] order-1 md:order-1">
               <CardHeader className="text-center pb-2">
                 <div className="flex justify-center mb-2">
                   {getRankIcon(2)}
                 </div>
-                <CardTitle className="text-white text-lg">
+                <CardTitle className="text-[#000000] text-lg">
                   {leaderboard[1]?.full_name || 'Anonymous'}
                 </CardTitle>
-                <CardDescription className="text-gray-300">
+                <CardDescription className="text-[#5C5C5C]">
                   Silver Medal
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="text-2xl font-bold text-white mb-1">
+                <div className="text-2xl font-bold text-[#000000] mb-1">
                   {leaderboard[1]?.total_score}
                 </div>
-                <div className="text-sm text-gray-300">
+                <div className="text-sm text-[#5C5C5C]">
                   {leaderboard[1]?.avgScore}% avg • {leaderboard[1]?.total_quizzes} quizzes
                 </div>
               </CardContent>
             </Card>
 
             {/* 1st Place */}
-            <Card className={`bg-gradient-to-br ${getRankColor(1)} order-2 md:order-2 md:-mt-4`}>
+            <Card className="bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] border-[#E1DDFC] order-2 md:order-2 md:-mt-4">
               <CardHeader className="text-center pb-2">
                 <div className="flex justify-center mb-2">
                   {getRankIcon(1)}
                 </div>
-                <CardTitle className="text-white text-xl">
+                <CardTitle className="text-[#000000] text-xl">
                   {leaderboard[0]?.full_name || 'Anonymous'}
                 </CardTitle>
-                <CardDescription className="text-yellow-300">
+                <CardDescription className="text-[#5C5C5C]">
                   Champion
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="text-3xl font-bold text-white mb-1">
+                <div className="text-3xl font-bold text-[#000000] mb-1">
                   {leaderboard[0]?.total_score}
                 </div>
-                <div className="text-sm text-gray-300">
+                <div className="text-sm text-[#5C5C5C]">
                   {leaderboard[0]?.avgScore}% avg • {leaderboard[0]?.total_quizzes} quizzes
                 </div>
               </CardContent>
             </Card>
 
             {/* 3rd Place */}
-            <Card className={`bg-gradient-to-br ${getRankColor(3)} order-3 md:order-3`}>
+            <Card className="bg-[#F6F1EC] border-[#E1DDFC] order-3 md:order-3">
               <CardHeader className="text-center pb-2">
                 <div className="flex justify-center mb-2">
                   {getRankIcon(3)}
                 </div>
-                <CardTitle className="text-white text-lg">
+                <CardTitle className="text-[#000000] text-lg">
                   {leaderboard[2]?.full_name || 'Anonymous'}
                 </CardTitle>
-                <CardDescription className="text-amber-300">
+                <CardDescription className="text-[#5C5C5C]">
                   Bronze Medal
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="text-2xl font-bold text-white mb-1">
+                <div className="text-2xl font-bold text-[#000000] mb-1">
                   {leaderboard[2]?.total_score}
                 </div>
-                <div className="text-sm text-gray-300">
+                <div className="text-sm text-[#5C5C5C]">
                   {leaderboard[2]?.avgScore}% avg • {leaderboard[2]?.total_quizzes} quizzes
                 </div>
               </CardContent>
@@ -172,19 +172,19 @@ const Leaderboard: React.FC = () => {
         )}
 
         {/* Full Leaderboard */}
-        <Card className="bg-gray-800/50 border-gray-700">
+        <Card className="bg-[#F6F1EC] border-[#E1DDFC]">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Trophy className="w-5 h-5" />
+            <CardTitle className="text-[#000000] flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-[#FFD966]" />
               Full Rankings
             </CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardDescription className="text-[#5C5C5C]">
               Complete leaderboard of all participants
             </CardDescription>
           </CardHeader>
           <CardContent>
             {leaderboard.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-[#5C5C5C]">
                 No participants yet. Be the first to take a quiz!
               </div>
             ) : (
@@ -193,9 +193,9 @@ const Leaderboard: React.FC = () => {
                   <div 
                     key={participant.user_id} 
                     className={`flex items-center justify-between p-4 rounded-lg transition-all ${
-                      participant.user_id === user?.id 
-                        ? 'bg-cyan-600/20 border border-cyan-500/30' 
-                        : 'bg-gray-700/30 hover:bg-gray-700/50'
+                      participant.user_id === user?.uid 
+                        ? 'bg-[rgb(204,220,251)] border border-[#E1DDFC]' 
+                        : 'bg-[#E1DDFC] hover:bg-[rgb(204,220,251)]'
                     }`}
                   >
                     <div className="flex items-center gap-4">
@@ -203,15 +203,15 @@ const Leaderboard: React.FC = () => {
                         {getRankIcon(participant.rank)}
                       </div>
                       <div>
-                        <div className={`font-semibold ${participant.user_id === user?.id ? 'text-cyan-400' : 'text-white'}`}>
+                        <div className={`font-semibold ${participant.user_id === user?.uid ? 'text-[#000000]' : 'text-[#5C5C5C]'}`}>
                           {participant.full_name || 'Anonymous'}
-                          {participant.user_id === user?.id && (
-                            <Badge variant="outline" className="ml-2 border-cyan-500 text-cyan-400">
+                          {participant.user_id === user?.uid && (
+                            <Badge variant="outline" className="ml-2 border-[#E1DDFC] text-[#5C5C5C]">
                               You
                             </Badge>
                           )}
                         </div>
-                        <div className="text-sm text-gray-400 flex items-center gap-4">
+                        <div className="text-sm text-[#5C5C5C] flex items-center gap-4">
                           <span className="flex items-center gap-1">
                             <Target className="w-3 h-3" />
                             {participant.total_quizzes} quizzes
@@ -222,10 +222,10 @@ const Leaderboard: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold text-white">
+                      <div className="text-lg font-bold text-[#000000]">
                         {participant.total_score}
                       </div>
-                      <div className="text-sm text-gray-400">
+                      <div className="text-sm text-[#5C5C5C]">
                         {participant.avgScore}% avg
                       </div>
                     </div>

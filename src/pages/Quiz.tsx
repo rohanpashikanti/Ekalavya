@@ -248,7 +248,7 @@ const Quiz: React.FC = () => {
         <Button 
           variant="outline" 
           onClick={() => window.location.href = '/dashboard'}
-          className="mb-4 category-btn"
+          className="mb-4 category-btn hover:bg-[rgb(204,220,251)] hover:border-[rgb(204,220,251)] hover:text-gray-800"
         >
           ← Back to Dashboard
         </Button>

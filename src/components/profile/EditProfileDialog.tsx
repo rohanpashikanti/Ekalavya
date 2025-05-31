@@ -53,18 +53,18 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ isOpen, onClose, 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-gray-800 border-gray-700 text-white">
+      <DialogContent className="bg-[#F6F1EC] border-[#E1DDFC] text-[#000000]">
         <DialogHeader>
-          <DialogTitle>Edit Profile</DialogTitle>
+          <DialogTitle className="text-[#000000]">Edit Profile</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username" className="text-[#5C5C5C]">Username</Label>
             <Input
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="bg-gray-700 border-gray-600 text-white"
+              className="bg-white border-[#E1DDFC] text-[#000000] focus:border-[#B6EADA]"
               disabled={loading}
             />
           </div>
@@ -76,14 +76,14 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ isOpen, onClose, 
               type="button"
               variant="outline"
               onClick={onClose}
-              className="border-gray-600 text-gray-200 hover:bg-gray-700"
+              className="border-[#E1DDFC] text-[#5C5C5C] hover:bg-[rgb(204,220,251)] hover:border-[rgb(204,220,251)] hover:text-[#000000]"
               disabled={loading}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white"
+              className="bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] hover:from-[#A0E9CE] hover:to-[#F9D3F3] text-[#000000] font-semibold"
               disabled={loading}
             >
               {loading ? 'Saving...' : 'Save Changes'}
