@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData } from '@/lib/userData';
 import { Button } from '@/components/ui/button';
@@ -16,18 +16,8 @@ import { Link } from 'react-router-dom';
 
 const Header: React.FC = () => {
   const { user, signOut } = useAuth();
-  const [userData, setUserData] = useState<any>(null);
-
-  const fetchUserData = () => {
-    if (user) {
-      const data = getUserData(user.uid);
-      setUserData(data);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserData();
-  }, [user]);
+  const userData = user ? getUserData(user.uid) : null;
+  const username = userData?.username || user?.displayName || user?.email?.split('@')[0] || 'Aptitude Arena';
 
   const handleSignOut = async () => {
     await signOut();
@@ -37,7 +27,7 @@ const Header: React.FC = () => {
     <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-lg">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link to="/" className="text-xl font-bold text-white">
-          {userData?.username || user?.email?.split('@')[0] || 'Aptitude Arena'}
+          {username}
         </Link>
 
         <div className="flex items-center gap-4">
@@ -58,7 +48,7 @@ const Header: React.FC = () => {
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white">
-                      {(userData?.username || user?.email?.split('@')[0] || 'U').charAt(0).toUpperCase()}
+                      {username.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -67,7 +57,7 @@ const Header: React.FC = () => {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none text-white">
-                      {userData?.username || user?.email?.split('@')[0]}
+                      {username}
                     </p>
                     <p className="text-xs leading-none text-gray-400">
                       {user?.email}

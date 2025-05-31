@@ -3,9 +3,8 @@ import Layout from '../components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Crown, Medal, Trophy, Target } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { db } from '@/integrations/firebase/client';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 
 const Leaderboard: React.FC = () => {
   const { user } = useAuth();
@@ -20,23 +19,24 @@ const Leaderboard: React.FC = () => {
   const fetchLeaderboard = async () => {
     try {
       // Get user profiles with their quiz statistics
-      const profilesRef = collection(db, 'user_stats');
-      const q = query(profilesRef, orderBy('total_score', 'desc'), limit(50));
-      const querySnapshot = await getDocs(q);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, email, total_score, total_quizzes, current_streak, max_streak')
+        .order('total_score', { ascending: false })
+        .limit(50);
 
-      const leaderboardData = querySnapshot.docs.map((doc, index) => ({
-        user_id: doc.id,
-        ...doc.data(),
+      if (error) throw error;
+
+      const leaderboardData = data?.map((profile, index) => ({
+        ...profile,
         rank: index + 1,
-        avgScore: doc.data().total_quizzes > 0 
-          ? Math.round((doc.data().total_score / (doc.data().total_quizzes * 20)) * 100) 
-          : 0
-      }));
+        avgScore: profile.total_quizzes > 0 ? Math.round((profile.total_score / (profile.total_quizzes * 20)) * 100) : 0
+      })) || [];
 
       setLeaderboard(leaderboardData);
 
       // Find current user's rank
-      const currentUserRank = leaderboardData.find(item => item.user_id === user?.uid)?.rank;
+      const currentUserRank = leaderboardData.find(item => item.user_id === user?.id)?.rank;
       setUserRank(currentUserRank || null);
 
     } catch (error) {
@@ -107,7 +107,7 @@ const Leaderboard: React.FC = () => {
                   {getRankIcon(2)}
                 </div>
                 <CardTitle className="text-white text-lg">
-                  {leaderboard[1]?.displayName || 'Anonymous'}
+                  {leaderboard[1]?.full_name || 'Anonymous'}
                 </CardTitle>
                 <CardDescription className="text-gray-300">
                   Silver Medal
@@ -130,7 +130,7 @@ const Leaderboard: React.FC = () => {
                   {getRankIcon(1)}
                 </div>
                 <CardTitle className="text-white text-xl">
-                  {leaderboard[0]?.displayName || 'Anonymous'}
+                  {leaderboard[0]?.full_name || 'Anonymous'}
                 </CardTitle>
                 <CardDescription className="text-yellow-300">
                   Champion
@@ -153,7 +153,7 @@ const Leaderboard: React.FC = () => {
                   {getRankIcon(3)}
                 </div>
                 <CardTitle className="text-white text-lg">
-                  {leaderboard[2]?.displayName || 'Anonymous'}
+                  {leaderboard[2]?.full_name || 'Anonymous'}
                 </CardTitle>
                 <CardDescription className="text-amber-300">
                   Bronze Medal
@@ -193,7 +193,7 @@ const Leaderboard: React.FC = () => {
                   <div 
                     key={participant.user_id} 
                     className={`flex items-center justify-between p-4 rounded-lg transition-all ${
-                      participant.user_id === user?.uid 
+                      participant.user_id === user?.id 
                         ? 'bg-cyan-600/20 border border-cyan-500/30' 
                         : 'bg-gray-700/30 hover:bg-gray-700/50'
                     }`}
@@ -203,9 +203,9 @@ const Leaderboard: React.FC = () => {
                         {getRankIcon(participant.rank)}
                       </div>
                       <div>
-                        <div className={`font-semibold ${participant.user_id === user?.uid ? 'text-cyan-400' : 'text-white'}`}>
-                          {participant.displayName || 'Anonymous'}
-                          {participant.user_id === user?.uid && (
+                        <div className={`font-semibold ${participant.user_id === user?.id ? 'text-cyan-400' : 'text-white'}`}>
+                          {participant.full_name || 'Anonymous'}
+                          {participant.user_id === user?.id && (
                             <Badge variant="outline" className="ml-2 border-cyan-500 text-cyan-400">
                               You
                             </Badge>

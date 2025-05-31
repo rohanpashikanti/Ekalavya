@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import ExamPage from '../components/exam/ExamPage';
 import DailyChallengeExam from '../components/exam/DailyChallengeExam';
+import VerbalAbilityExam from '../components/exam/VerbalAbilityExam';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData, saveUserData } from '@/lib/userData';
 
@@ -28,6 +29,11 @@ const topics = {
   'analogical-reasoning': {
     name: 'Analogical Reasoning',
     description: 'Analogy, Series, Syllogisms'
+  },
+  // Verbal Ability
+  'verbal-ability': {
+    name: 'Verbal Ability',
+    description: 'Reading Comprehension, Grammar, Vocabulary'
   },
   // Daily Challenge
   'daily-challenge': {
@@ -146,17 +152,21 @@ const Exam: React.FC = () => {
     }
   };
 
+  if (topicId === 'daily-challenge') {
+    return <DailyChallengeExam onComplete={handleExamComplete} />;
+  }
+
+  if (topicId === 'verbal-ability') {
+    return <VerbalAbilityExam onComplete={handleExamComplete} />;
+  }
+
   return (
     <Layout>
-      {topicId === 'daily-challenge' ? (
-        <DailyChallengeExam onComplete={handleExamComplete} />
-      ) : (
-        <ExamPage
-          topic={topic.name}
-          description={topic.description}
-          onComplete={handleExamComplete}
-        />
-      )}
+      <ExamPage
+        topic={topic.name}
+        description={topic.description}
+        onComplete={handleExamComplete}
+      />
     </Layout>
   );
 };

@@ -1,28 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { getUserData } from '@/lib/userData';
-import Header from './Header';
+
+import React from 'react';
 import Sidebar from './Sidebar';
+import Header from './Header';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { user } = useAuth();
-  const [userData, setUserData] = useState<any>(null);
-
-  const fetchUserData = () => {
-    if (user) {
-      const data = getUserData(user.uid);
-      setUserData(data);
-    }
-  };
-
-  useEffect(() => {
-    fetchUserData();
-  }, [user]);
-
   return (
     <div className="min-h-screen bg-gray-900">
       <div className="flex">

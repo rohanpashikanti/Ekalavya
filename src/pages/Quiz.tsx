@@ -7,10 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Brain, Target, BookOpen, Globe, Loader2, Calculator, Lightbulb } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData, getRecentQuizzes } from '@/lib/userData';
-import { db } from '@/integrations/firebase/client';
-import { collection, addDoc, getDoc, doc, query, where, getDocs } from 'firebase/firestore';
 
 const Quiz: React.FC = () => {
   const { user } = useAuth();
@@ -37,7 +36,7 @@ const Quiz: React.FC = () => {
       difficulty: 'Advanced'
     },
     {
-      id: 'verbal',
+      id: 'verbal-ability',
       name: 'Verbal Ability',
       icon: BookOpen,
       color: 'from-green-500 to-teal-500',
@@ -68,32 +67,6 @@ const Quiz: React.FC = () => {
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const generateQuiz = async (topicId: string, difficulty: string, quizType: string) => {
-    if (!user) return null;
-
-    // Create a new quiz document
-    const quizRef = await addDoc(collection(db, 'quizzes'), {
-      topic: topicId,
-      difficulty,
-      type: quizType,
-      user_id: user.uid,
-      created_at: new Date().toISOString(),
-      is_completed: false,
-      question_count: 20
-    });
-
-    // Generate questions (you'll need to implement your question generation logic here)
-    const questions = []; // Add your question generation logic
-    for (const question of questions) {
-      await addDoc(collection(db, 'questions'), {
-        ...question,
-        quiz_id: quizRef.id
-      });
-    }
-
-    return quizRef.id;
-  };
-
   const startQuiz = async (topicId: string, difficulty: string = 'intermediate', quizType: string = 'exam') => {
     if (!user) return;
     
@@ -102,7 +75,8 @@ const Quiz: React.FC = () => {
       'arithmetic-2', 
       'number-system',
       'verbal-reasoning',
-      'analogical-reasoning'
+      'analogical-reasoning',
+      'verbal-ability'
     ].includes(topicId)) {
       window.location.href = `/exam/${topicId}`;
       return;
@@ -111,37 +85,36 @@ const Quiz: React.FC = () => {
     setLoading(true);
     try {
       // Get user's performance data
-      const userData = getUserData(user.uid);
-      const recentQuizzes = getRecentQuizzes(user.uid, 10); // Get last 10 quizzes for analysis
+      const userData = getUserData(user.id);
+      const recentQuizzes = getRecentQuizzes(user.id, 10); // Get last 10 quizzes for analysis
 
-      // Generate new quiz
-      const quizId = await generateQuiz(topicId, difficulty, quizType);
-      if (!quizId) throw new Error('Failed to generate quiz');
+      const { data, error } = await supabase.functions.invoke('generate-quiz', {
+        body: { 
+          topic: topicId, 
+          difficulty, 
+          quizType,
+          userId: user.id
+        },
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      });
+
+      if (error) throw error;
 
       // Fetch the complete quiz with questions
-      const quizRef = doc(db, 'quizzes', quizId);
-      const quizDoc = await getDoc(quizRef);
-      
-      if (!quizDoc.exists()) {
-        throw new Error('Failed to create quiz');
-      }
+      const { data: quiz, error: quizError } = await supabase
+        .from('quizzes')
+        .select(`
+          *,
+          questions (*)
+        `)
+        .eq('id', data.quiz_id)
+        .single();
 
-      const quizData = quizDoc.data();
-      
-      // Fetch questions
-      const questionsRef = collection(db, 'questions');
-      const questionsQuery = query(questionsRef, where('quiz_id', '==', quizId));
-      const questionsSnapshot = await getDocs(questionsQuery);
-      const questions = questionsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      if (quizError) throw quizError;
 
-      setCurrentQuiz({
-        id: quizId,
-        ...quizData,
-        questions
-      });
+      setCurrentQuiz(quiz);
       setQuizState('taking');
     } catch (error) {
       console.error('Error starting quiz:', error);
@@ -313,14 +286,19 @@ const Quiz: React.FC = () => {
           </CardContent>
         </Card>
 
-
         {/* Regular Quiz Categories */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {quizCategories.map((category) => (
             <Card
               key={category.id}
               className="bg-gray-800/50 border-gray-700 hover:border-gray-600 transition-all duration-300 cursor-pointer"
-              onClick={() => setSelectedCategory(category.id)}
+              onClick={() => {
+                if (category.id === 'verbal-ability') {
+                  window.location.href = '/exam/verbal-ability';
+                } else {
+                  setSelectedCategory(category.id);
+                }
+              }}
             >
               <CardHeader>
                 <div className="flex items-center justify-between">

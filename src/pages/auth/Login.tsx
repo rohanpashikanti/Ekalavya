@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  const { signIn } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -31,14 +31,24 @@ const Login: React.FC = () => {
     setError('');
 
     try {
-      const { error } = await signIn(email, password);
-      if (error) {
-        setError(error.message);
+      const { error: loginError } = await login(email, password);
+      if (loginError) {
+        // Handle specific error cases
+        if (loginError.includes('email')) {
+          setError('Invalid email address');
+        } else if (loginError.includes('password')) {
+          setError('Invalid password');
+        } else if (loginError.includes('verify')) {
+          setError('Please verify your email before logging in');
+        } else {
+          setError(loginError);
+        }
       } else {
         navigate(from, { replace: true });
       }
-    } catch (err) {
-      setError('An unexpected error occurred');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -107,6 +117,24 @@ const Login: React.FC = () => {
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
+
+          <div className="text-center space-y-2">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
+              Forgot your password?
+            </Link>
+            <p className="text-sm text-gray-400">
+              Don't have an account?{' '}
+              <Link
+                to="/register"
+                className="text-cyan-400 hover:text-cyan-300 transition-colors"
+              >
+                Sign up
+              </Link>
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>

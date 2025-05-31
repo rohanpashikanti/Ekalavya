@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Mail, ArrowLeft, Zap } from 'lucide-react';
+import { Mail, ArrowLeft } from 'lucide-react';
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -18,7 +17,6 @@ const ForgotPassword: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!email) {
       setError('Please enter your email address');
       return;
@@ -51,12 +49,12 @@ const ForgotPassword: React.FC = () => {
             </div>
             <CardTitle className="text-white text-2xl">Check Your Email</CardTitle>
             <CardDescription className="text-gray-400">
-              Password reset link sent to {email}
+              We've sent password reset instructions to {email}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-gray-300 text-center mb-6">
-              We've sent you a password reset link. Check your email and follow the instructions to reset your password.
+              Click the link in your email to reset your password. If you don't see it, check your spam folder.
             </p>
             <Link to="/login">
               <Button
@@ -78,11 +76,11 @@ const ForgotPassword: React.FC = () => {
       <Card className="w-full max-w-md bg-gray-800 border-gray-700">
         <CardHeader className="text-center">
           <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Zap className="w-8 h-8 text-white" />
+            <Mail className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-white text-2xl font-orbitron">Reset Password</CardTitle>
+          <CardTitle className="text-white text-2xl">Reset Password</CardTitle>
           <CardDescription className="text-gray-400">
-            Enter your email to receive a reset link
+            Enter your email address and we'll send you instructions to reset your password
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -112,16 +110,15 @@ const ForgotPassword: React.FC = () => {
               className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white"
               disabled={loading}
             >
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              {loading ? 'Sending...' : 'Send Reset Instructions'}
             </Button>
           </form>
 
           <div className="text-center">
             <Link
               to="/login"
-              className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center"
+              className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 mr-1" />
               Back to Login
             </Link>
           </div>

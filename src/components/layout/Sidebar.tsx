@@ -76,7 +76,7 @@ const Sidebar: React.FC = () => {
       {!collapsed && (
         <div className="p-4 border-t border-gray-700">
           <div className="text-xs text-gray-400 text-center">
-            Version 1.0.0
+            Version 2.0.0
           </div>
         </div>
       )}

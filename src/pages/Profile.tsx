@@ -20,16 +20,17 @@ import {
 } from 'lucide-react';
 import { getUserData, getRecentQuizzes } from '@/lib/userData';
 import EditProfileDialog from '@/components/profile/EditProfileDialog';
-import { useToast } from '@/hooks/use-toast';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [userStats, setUserStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const userData = user ? getUserData(user.uid) : null;
+  const username = userData?.username || user?.displayName || 'User';
+  const initials = username.split(' ').map(n => n[0]).join('').toUpperCase();
 
-  const fetchUserData = () => {
+  const loadUserData = () => {
     if (user) {
       const data = getUserData(user.uid);
       const recentQuizzes = getRecentQuizzes(user.uid, 100); // Get more quizzes for better stats
@@ -135,14 +136,14 @@ const Profile: React.FC = () => {
         ...data,
         categoryStats: formattedCategoryStats,
         achievements,
-        joinDate: user.created_at || new Date().toISOString()
+        joinDate: user.metadata.creationTime || new Date().toISOString()
       });
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchUserData();
+    loadUserData();
   }, [user]);
 
   const getLevelProgress = () => {
@@ -167,7 +168,11 @@ const Profile: React.FC = () => {
 
   const getDisplayName = () => {
     if (!user) return '';
-    return userStats?.username || user.email?.split('@')[0] || '';
+    return userStats?.username || user.displayName || user.email?.split('@')[0] || '';
+  };
+
+  const handleProfileUpdate = () => {
+    loadUserData();
   };
 
   if (loading) {
@@ -215,13 +220,13 @@ const Profile: React.FC = () => {
                 <div className="flex flex-col items-center text-center space-y-4">
                   <Avatar className="w-24 h-24">
                     <AvatarFallback className="bg-gradient-to-r from-cyan-500 to-purple-600 text-white text-2xl">
-                      {getDisplayName().charAt(0).toUpperCase()}
+                      {initials}
                     </AvatarFallback>
                   </Avatar>
                   
                   <div>
                     <h2 className="text-2xl font-bold text-white">
-                      {getDisplayName()}
+                      {username}
                     </h2>
                     <p className="text-gray-400">{user?.email}</p>
                   </div>
@@ -254,7 +259,7 @@ const Profile: React.FC = () => {
                   <Trophy className="w-5 h-5 text-yellow-400" />
                   <div>
                     <div className="text-white font-semibold">Total Score</div>
-                    <div className="text-gray-400">{userStats.totalScore}</div>
+                    <div className="text-gray-400">{userStats?.totalScore || 0}</div>
                   </div>
                 </div>
                 
@@ -262,7 +267,7 @@ const Profile: React.FC = () => {
                   <Target className="w-5 h-5 text-green-400" />
                   <div>
                     <div className="text-white font-semibold">Accuracy</div>
-                    <div className="text-gray-400">{userStats.accuracy.toFixed(1)}%</div>
+                    <div className="text-gray-400">{(userStats?.accuracy || 0).toFixed(1)}%</div>
                   </div>
                 </div>
                 
@@ -271,7 +276,7 @@ const Profile: React.FC = () => {
                   <div>
                     <div className="text-white font-semibold">Member Since</div>
                     <div className="text-gray-400">
-                      {new Date(userStats.joinDate).toLocaleDateString()}
+                      {userStats?.joinDate ? new Date(userStats.joinDate).toLocaleDateString() : 'N/A'}
                     </div>
                   </div>
                 </div>
@@ -404,8 +409,8 @@ const Profile: React.FC = () => {
       <EditProfileDialog
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
-        currentUsername={getDisplayName()}
-        onUsernameUpdate={fetchUserData}
+        currentUsername={username}
+        onUpdate={handleProfileUpdate}
       />
     </Layout>
   );

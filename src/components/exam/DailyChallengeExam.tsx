@@ -217,15 +217,24 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
 
   if (!examStarted) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <Card className="w-full max-w-md p-6">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <Card className="w-full max-w-md p-6 bg-gray-800/50 backdrop-blur-lg border border-gray-700">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold mb-4">Daily Challenge</CardTitle>
+            <div className="flex flex-col space-y-4">
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = '/quiz'}
+                className="w-fit border-gray-600 text-gray-200 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
+              >
+                ← Back to Quiz
+              </Button>
+              <CardTitle className="text-2xl font-bold text-white">Daily Challenge</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="mb-4">
-              <p className="text-gray-600 mb-4">Test your aptitude skills with this daily challenge covering various topics including Arithmetic, Logical Reasoning, and more.</p>
-              <div className="text-gray-600">You will get {TOTAL_QUESTIONS} MCQ questions and {TOTAL_TIME / 60} minutes to complete the exam.</div>
+            <div className="mb-4 text-gray-400">
+              <p className="mb-4">Test your aptitude skills with this daily challenge covering various topics including Arithmetic, Logical Reasoning, and more.</p>
+              <div>You will get {TOTAL_QUESTIONS} MCQ questions and {TOTAL_TIME / 60} minutes to complete the exam.</div>
             </div>
             <Button 
               className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
@@ -262,31 +271,50 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
 
   if (showResults) {
     return (
-      <Card className="max-w-3xl mx-auto p-6">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold mb-4">Daily Challenge Results</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="text-xl font-semibold">Your Score: {score} / {questions.length}</div>
-            {questions.map((q, idx) => (
-              <div key={idx} className="p-3 border rounded">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">Q.{idx + 1}</span>
-                  <span className="text-xs bg-gray-200 px-2 py-0.5 rounded">{q.topic}</span>
-                  {q.markedForReview && <BookmarkCheck className="w-4 h-4 text-purple-500" />}
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8">
+        <Card className="max-w-3xl mx-auto p-6 bg-gray-800/50 backdrop-blur-lg border border-gray-700">
+          <CardHeader>
+            <div className="flex flex-col space-y-4">
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = '/dashboard'}
+                className="w-fit border-gray-600 text-gray-200 hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400"
+              >
+                ← Back to Dashboard
+              </Button>
+              <CardTitle className="text-2xl font-bold text-white">Daily Challenge Results</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="text-xl font-semibold text-white">Your Score: {score} / {questions.length}</div>
+              {questions.map((q, idx) => (
+                <div key={idx} className="p-3 border border-gray-700 rounded bg-gray-800/50">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-white">Q.{idx + 1}</span>
+                    <span className="text-xs bg-gray-700 px-2 py-0.5 rounded text-gray-300">MCQ</span>
+                    {q.markedForReview && <BookmarkCheck className="w-4 h-4 text-purple-500" />}
+                  </div>
+                  <div className="text-gray-300 mb-2">{q.question}</div>
+                  <div>
+                    <span className="font-semibold text-gray-400">Your answer: </span>
+                    {q.userAnswer ? (
+                      <span className="text-gray-300">
+                        {String.fromCharCode(65 + q.options.indexOf(q.userAnswer))}. {q.userAnswer}
+                      </span>
+                    ) : (
+                      <span className="text-gray-500">Not answered</span>
+                    )}
+                    <span className="ml-2 text-xs text-blue-400">
+                      (Correct: {String.fromCharCode(65 + q.options.indexOf(q.correctAnswer))}. {q.correctAnswer})
+                    </span>
+                  </div>
                 </div>
-                <div className="text-gray-700 mb-2">{q.question}</div>
-                <div>
-                  <span className="font-semibold">Your answer: </span>
-                  {q.userAnswer ? `${String.fromCharCode(65 + q.options.indexOf(q.userAnswer))}. ${q.userAnswer}` : <span className="text-gray-400">Not answered</span>}
-                  <span className="ml-2 text-xs text-blue-500">(Correct: {String.fromCharCode(65 + q.options.indexOf(q.correctAnswer))}. {q.correctAnswer})</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 

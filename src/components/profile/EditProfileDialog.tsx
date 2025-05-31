@@ -6,24 +6,16 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserData, saveUserData } from '@/lib/userData';
 import { updateProfile } from 'firebase/auth';
-import { auth } from '@/integrations/firebase/client';
-import { useToast } from '@/hooks/use-toast';
 
 interface EditProfileDialogProps {
   isOpen: boolean;
   onClose: () => void;
   currentUsername: string;
-  onUsernameUpdate: () => void;
+  onUpdate?: () => void;
 }
 
-const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ 
-  isOpen, 
-  onClose, 
-  currentUsername,
-  onUsernameUpdate 
-}) => {
+const EditProfileDialog: React.FC<EditProfileDialogProps> = ({ isOpen, onClose, currentUsername, onUpdate }) => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [username, setUsername] = useState(currentUsername);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,11 +23,6 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
-    if (!username.trim()) {
-      setError('Username cannot be empty');
-      return;
-    }
 
     setLoading(true);
     setError(null);
@@ -45,30 +32,20 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
       const userData = getUserData(user.uid);
       const updatedUserData = {
         ...userData,
-        username: username.trim()
+        username
       };
       saveUserData(user.uid, updatedUserData);
 
-      // Update username in Firebase auth profile
-      await updateProfile(auth.currentUser!, {
-        displayName: username.trim()
+      // Update display name in Firebase
+      await updateProfile(user, {
+        displayName: username
       });
 
-      toast({
-        title: "Profile updated",
-        description: "Your username has been successfully updated.",
-      });
-
-      onUsernameUpdate(); // Trigger refresh in parent component
+      onUpdate?.();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating profile:', error);
-      setError('Failed to update profile. Please try again.');
-      toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
-      });
+      setError(error.message || 'Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -76,19 +53,19 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-800 border-gray-700">
+      <DialogContent className="bg-gray-800 border-gray-700 text-white">
         <DialogHeader>
-          <DialogTitle className="text-white">Edit Profile</DialogTitle>
+          <DialogTitle>Edit Profile</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username" className="text-gray-200">Username</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="bg-gray-700 border-gray-600 text-white"
-              placeholder="Enter your username"
+              disabled={loading}
             />
           </div>
           {error && (
@@ -100,13 +77,14 @@ const EditProfileDialog: React.FC<EditProfileDialogProps> = ({
               variant="outline"
               onClick={onClose}
               className="border-gray-600 text-gray-200 hover:bg-gray-700"
+              disabled={loading}
             >
               Cancel
             </Button>
             <Button
               type="submit"
+              className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white"
               disabled={loading}
-              className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700"
             >
               {loading ? 'Saving...' : 'Save Changes'}
             </Button>
