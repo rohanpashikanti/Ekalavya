@@ -22,7 +22,7 @@ const AuthorPage: React.FC = () => {
                 A curious mind at the crossroads of technology and introspection, I blend my Computer Science background with a reflective approach to create purposeful digital experiences. From AI tools to ideas on growth and resilience, I aim to connect logic with emotion and build with meaning.
               </p>
               <div className="flex gap-4 mt-2 justify-center">
-                <a href="https://www.linkedin.com/in/rohan-pashikanti/" target="_blank" className="px-8 py-4 rounded-lg bg-[#1A1A1A] text-white font-semibold shadow hover:bg-[#333] transition text-lg">Connect with me</a>
+                <a href="https://www.linkedin.com/in/rohanpashikanti/" target="_blank" className="px-8 py-4 rounded-lg bg-[#1A1A1A] text-white font-semibold shadow hover:bg-[#333] transition text-lg">Connect with me</a>
                 <a href="https://rohanpashikanti.github.io/portfolio/" target="_blank" className="px-8 py-4 rounded-lg border border-[#1A1A1A] text-[#1A1A1A] font-semibold hover:bg-[#F6F1EC] transition text-lg  bg-transparent">Check my works</a>
               </div>
             </div>
