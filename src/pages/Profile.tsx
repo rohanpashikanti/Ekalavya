@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
 import AvatarUpload from '@/components/profile/AvatarUpload';
 import { 
@@ -17,15 +17,18 @@ import {
   TrendingUp,
   Award,
   Edit,
-  CheckCircle2
+  CheckCircle2,
+  LogOut
 } from 'lucide-react';
 import { getUserData, getRecentQuizzes } from '@/lib/userData';
 import EditProfileDialog from '@/components/profile/EditProfileDialog';
+import Loading from '@/components/ui/loading';
 
 const Profile: React.FC = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [userStats, setUserStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [avatar, setAvatar] = useState<string>('');
   const userData = user ? getUserData(user.uid) : null;
@@ -190,6 +193,11 @@ const Profile: React.FC = () => {
     loadUserData();
   };
 
+  const handleSignOut = async () => {
+    setIsLoggingOut(true);
+    await signOut();
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -212,19 +220,30 @@ const Profile: React.FC = () => {
 
   return (
     <Layout>
+      {isLoggingOut && <Loading />}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-[#000000] mb-2">Profile</h1>
             <p className="text-[#5C5C5C]">Manage your account and track your progress</p>
           </div>
-          <Button 
-            className="bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] hover:from-[#A0E9CE] hover:to-[#F9D3F3] text-[#000000] font-semibold rounded-xl shadow-none border-none"
-            onClick={() => setIsEditDialogOpen(true)}
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            Edit Profile
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              className="bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] hover:from-[#A0E9CE] hover:to-[#F9D3F3] text-[#000000] font-semibold rounded-xl shadow-none border-none"
+              onClick={() => setIsEditDialogOpen(true)}
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Edit Profile
+            </Button>
+            <Button 
+              variant="outline"
+              className="border-[#E1DDFC] text-[#000000] hover:bg-[#E1DDFC] font-semibold rounded-xl"
+              onClick={handleSignOut}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

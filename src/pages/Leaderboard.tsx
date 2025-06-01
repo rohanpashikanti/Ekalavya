@@ -1,243 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Layout from '../components/layout/Layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Crown, Medal, Trophy, Target } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
-const Leaderboard: React.FC = () => {
-  const { user } = useAuth();
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  const [userRank, setUserRank] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+const AUTHOR_IMAGE = "https://res.cloudinary.com/dcoijn5mh/image/upload/v1748765182/WhatsApp_Image_2025-06-01_at_13.35.23_1_ozhzsu.jpg";
+const IMAGE_2 = "https://res.cloudinary.com/dcoijn5mh/image/upload/v1748765182/WhatsApp_Image_2025-06-01_at_13.35.23_e0okjm.jpg";
+const IMAGE_3 = "https://res.cloudinary.com/dcoijn5mh/image/upload/v1748765182/WhatsApp_Image_2025-06-01_at_13.35.24_wmphs2.jpg";
 
-  useEffect(() => {
-    fetchLeaderboard();
-  }, []);
-
-  const fetchLeaderboard = async () => {
-    try {
-      // Get user profiles with their quiz statistics
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, email, total_score, total_quizzes, current_streak, max_streak')
-        .order('total_score', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-
-      const leaderboardData = data?.map((profile, index) => ({
-        ...profile,
-        rank: index + 1,
-        avgScore: profile.total_quizzes > 0 ? Math.round((profile.total_score / (profile.total_quizzes * 20)) * 100) : 0
-      })) || [];
-
-      setLeaderboard(leaderboardData);
-
-      // Find current user's rank
-      const currentUserRank = leaderboardData.find(item => item.user_id === user?.uid)?.rank;
-      setUserRank(currentUserRank || null);
-
-    } catch (error) {
-      console.error('Error fetching leaderboard:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return <Crown className="w-5 h-5 text-yellow-400" />;
-      case 2:
-        return <Medal className="w-5 h-5 text-gray-400" />;
-      case 3:
-        return <Medal className="w-5 h-5 text-amber-600" />;
-      default:
-        return <span className="text-sm font-bold text-gray-400">#{rank}</span>;
-    }
-  };
-
-  const getRankColor = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return 'from-yellow-500/20 to-orange-500/20 border-yellow-500/30';
-      case 2:
-        return 'from-gray-500/20 to-slate-500/20 border-gray-500/30';
-      case 3:
-        return 'from-amber-600/20 to-amber-700/20 border-amber-600/30';
-      default:
-        return 'from-gray-800/50 to-gray-800/30 border-gray-700';
-    }
-  };
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-96">
-          <div className="text-white">Loading...</div>
-        </div>
-      </Layout>
-    );
-  }
-
+const AuthorPage: React.FC = () => {
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-[#000000] mb-2">Leaderboard</h1>
-            <p className="text-[#5C5C5C]">Top performers in aptitude tests</p>
+      <div className="flex items-center justify-center min-h-[80vh] w-full bg-white">
+        <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center justify-center">
+          {/* Left: Text Content */}
+          <div className="flex flex-col justify-center items-center h-full text-center">
+            <div className="mb-2 w-full">
+              <span className="block text-[#A0A4A8] text-base font-medium tracking-wide mb-4 border-l-4 border-[#E1DDFC] pl-4 mx-auto text-left w-fit">Founder Of Ekalavya</span>
+              <h1 className="text-5xl md:text-6xl font-bold text-[#1A1A1A] leading-tight mb-2">
+                Rohan Pashikanti
+              </h1>
+              <div className="text-2xl text-[#5C5C5C] font-normal mb-6">Full Stack Developer</div>
+              <p className="text-[#A0A4A8] text-lg mb-10 max-w-xl mx-auto">
+                A curious mind at the crossroads of technology and introspection, I blend my Computer Science background with a reflective approach to create purposeful digital experiences. From AI tools to ideas on growth and resilience, I aim to connect logic with emotion and build with meaning.
+              </p>
+              <div className="flex gap-4 mt-2 justify-center">
+                <a href="https://www.linkedin.com/in/rohan-pashikanti/" target="_blank" className="px-8 py-4 rounded-lg bg-[#1A1A1A] text-white font-semibold shadow hover:bg-[#333] transition text-lg">Connect with me</a>
+                <a href="https://rohanpashikanti.github.io/portfolio/" target="_blank" className="px-8 py-4 rounded-lg border border-[#1A1A1A] text-[#1A1A1A] font-semibold hover:bg-[#F6F1EC] transition text-lg  bg-transparent">Check my works</a>
+              </div>
+            </div>
           </div>
-          {userRank && (
-            <Badge variant="outline" className="border-[#E1DDFC] text-[#5C5C5C]">
-              Your Rank: #{userRank}
-            </Badge>
-          )}
+          {/* Right: Images Grid */}
+          <div className="flex flex-col gap-4 items-center w-full">
+            <div className="grid grid-cols-2 grid-rows-2 gap-4 w-full max-w-xs md:max-w-sm">
+              <img src={IMAGE_2} alt="Author 2" className="rounded-xl row-span-2 object-cover w-full h-full min-h-[320px] max-h-[420px]" />
+              <img src={AUTHOR_IMAGE} alt="Author" className="rounded-xl object-cover w-full h-full min-h-[150px] max-h-[200px]" />
+              <img src={IMAGE_3} alt="Books" className="rounded-xl object-cover w-full h-full min-h-[150px] max-h-[200px]" />
+            </div>
+          </div>
         </div>
-
-        {/* Top 3 Podium */}
-        {leaderboard.length >= 3 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {/* 2nd Place */}
-            <Card className="bg-[#F6F1EC] border-[#E1DDFC] order-1 md:order-1">
-              <CardHeader className="text-center pb-2">
-                <div className="flex justify-center mb-2">
-                  {getRankIcon(2)}
-                </div>
-                <CardTitle className="text-[#000000] text-lg">
-                  {leaderboard[1]?.full_name || 'Anonymous'}
-                </CardTitle>
-                <CardDescription className="text-[#5C5C5C]">
-                  Silver Medal
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <div className="text-2xl font-bold text-[#000000] mb-1">
-                  {leaderboard[1]?.total_score}
-                </div>
-                <div className="text-sm text-[#5C5C5C]">
-                  {leaderboard[1]?.avgScore}% avg • {leaderboard[1]?.total_quizzes} quizzes
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 1st Place */}
-            <Card className="bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] border-[#E1DDFC] order-2 md:order-2 md:-mt-4">
-              <CardHeader className="text-center pb-2">
-                <div className="flex justify-center mb-2">
-                  {getRankIcon(1)}
-                </div>
-                <CardTitle className="text-[#000000] text-xl">
-                  {leaderboard[0]?.full_name || 'Anonymous'}
-                </CardTitle>
-                <CardDescription className="text-[#5C5C5C]">
-                  Champion
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <div className="text-3xl font-bold text-[#000000] mb-1">
-                  {leaderboard[0]?.total_score}
-                </div>
-                <div className="text-sm text-[#5C5C5C]">
-                  {leaderboard[0]?.avgScore}% avg • {leaderboard[0]?.total_quizzes} quizzes
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* 3rd Place */}
-            <Card className="bg-[#F6F1EC] border-[#E1DDFC] order-3 md:order-3">
-              <CardHeader className="text-center pb-2">
-                <div className="flex justify-center mb-2">
-                  {getRankIcon(3)}
-                </div>
-                <CardTitle className="text-[#000000] text-lg">
-                  {leaderboard[2]?.full_name || 'Anonymous'}
-                </CardTitle>
-                <CardDescription className="text-[#5C5C5C]">
-                  Bronze Medal
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center">
-                <div className="text-2xl font-bold text-[#000000] mb-1">
-                  {leaderboard[2]?.total_score}
-                </div>
-                <div className="text-sm text-[#5C5C5C]">
-                  {leaderboard[2]?.avgScore}% avg • {leaderboard[2]?.total_quizzes} quizzes
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Full Leaderboard */}
-        <Card className="bg-[#F6F1EC] border-[#E1DDFC]">
-          <CardHeader>
-            <CardTitle className="text-[#000000] flex items-center gap-2">
-              <Trophy className="w-5 h-5 text-[#FFD966]" />
-              Full Rankings
-            </CardTitle>
-            <CardDescription className="text-[#5C5C5C]">
-              Complete leaderboard of all participants
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {leaderboard.length === 0 ? (
-              <div className="text-center py-8 text-[#5C5C5C]">
-                No participants yet. Be the first to take a quiz!
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {leaderboard.map((participant) => (
-                  <div 
-                    key={participant.user_id} 
-                    className={`flex items-center justify-between p-4 rounded-lg transition-all ${
-                      participant.user_id === user?.uid 
-                        ? 'bg-[rgb(204,220,251)] border border-[#E1DDFC]' 
-                        : 'bg-[#E1DDFC] hover:bg-[rgb(204,220,251)]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 flex items-center justify-center">
-                        {getRankIcon(participant.rank)}
-                      </div>
-                      <div>
-                        <div className={`font-semibold ${participant.user_id === user?.uid ? 'text-[#000000]' : 'text-[#5C5C5C]'}`}>
-                          {participant.full_name || 'Anonymous'}
-                          {participant.user_id === user?.uid && (
-                            <Badge variant="outline" className="ml-2 border-[#E1DDFC] text-[#5C5C5C]">
-                              You
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-sm text-[#5C5C5C] flex items-center gap-4">
-                          <span className="flex items-center gap-1">
-                            <Target className="w-3 h-3" />
-                            {participant.total_quizzes} quizzes
-                          </span>
-                          <span>Streak: {participant.current_streak}</span>
-                          <span>Best: {participant.max_streak}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-[#000000]">
-                        {participant.total_score}
-                      </div>
-                      <div className="text-sm text-[#5C5C5C]">
-                        {participant.avgScore}% avg
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
     </Layout>
   );
 };
 
-export default Leaderboard; 
+export default AuthorPage; 

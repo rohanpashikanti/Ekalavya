@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, RefreshCw, Bookmark, BookmarkCheck } from 'lucide-react';
 import EndTestDialog from './exam/EndTestDialog';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 
 interface Question {
   question: string;
@@ -222,9 +223,9 @@ const AptitudeTest = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen space-y-4">
-        <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
-        <p className="text-lg">Generating questions...</p>
+      <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+        <LoadingSpinner />
+        <p className="text-[#000000] text-lg font-medium mt-4">Generating questions...</p>
       </div>
     );
   }

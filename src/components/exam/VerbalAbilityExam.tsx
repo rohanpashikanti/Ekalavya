@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import EndTestDialog from './EndTestDialog';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 
 interface ReadingComprehension {
   paragraph: string;
@@ -277,9 +278,9 @@ Return ONLY a valid JSON object, no other text.`;
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen space-y-4">
-        <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
-        <p className="text-lg">Generating questions...</p>
+      <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+        <LoadingSpinner />
+        <p className="text-[#000000] text-lg font-medium mt-4">Generating questions...</p>
       </div>
     );
   }

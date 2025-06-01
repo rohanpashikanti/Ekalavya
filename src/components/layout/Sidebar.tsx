@@ -5,8 +5,7 @@ import {
   Home,
   Brain,
   History,
-  User,
-  Trophy
+  User
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -15,7 +14,17 @@ const Sidebar: React.FC = () => {
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Take Quiz', href: '/quiz', icon: Brain },
     { name: 'History', href: '/history', icon: History },
-    { name: 'Leaderboard', href: '/leaderboard', icon: Trophy },
+    { 
+      name: 'Author', 
+      href: '/leaderboard', 
+      icon: () => (
+        <img 
+          src="https://res.cloudinary.com/dcoijn5mh/image/upload/v1748758164/ChatGPT_Image_Jun_1_2025_11_38_47_AM_ua430e.png"
+          alt="Author"
+          className="w-6 h-6 rounded-full object-cover"
+        />
+      )
+    },
     { name: 'Profile', href: '/profile', icon: User },
   ];
 

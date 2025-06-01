@@ -28,7 +28,7 @@ const ForgotPassword: React.FC = () => {
     try {
       const { error } = await resetPassword(email);
       if (error) {
-        setError(error.message);
+        setError(error);
       } else {
         setSuccess(true);
       }
@@ -41,25 +41,25 @@ const ForgotPassword: React.FC = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-gray-800 border-gray-700">
+      <div className="min-h-screen bg-[#F6F1EC] flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-white border-[#E1DDFC] rounded-2xl">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Mail className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] rounded-full flex items-center justify-center mx-auto mb-4">
+              <Mail className="w-8 h-8 text-[#000000]" />
             </div>
-            <CardTitle className="text-white text-2xl">Check Your Email</CardTitle>
-            <CardDescription className="text-gray-400">
+            <CardTitle className="text-[#000000] text-2xl font-bold">Check Your Email</CardTitle>
+            <CardDescription className="text-[#5C5C5C]">
               We've sent password reset instructions to {email}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-300 text-center mb-6">
+            <p className="text-[#5C5C5C] text-center mb-6">
               Click the link in your email to reset your password. If you don't see it, check your spam folder.
             </p>
             <Link to="/login">
               <Button
                 variant="outline"
-                className="w-full border-gray-600 text-gray-200 hover:bg-gray-700"
+                className="w-full border-[#E1DDFC] text-[#000000] hover:bg-[#E1DDFC] font-semibold rounded-xl"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Login
@@ -72,34 +72,34 @@ const ForgotPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-gray-800 border-gray-700">
+    <div className="min-h-screen bg-[#F6F1EC] flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white border-[#E1DDFC] rounded-2xl">
         <CardHeader className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail className="w-8 h-8 text-[#000000]" />
           </div>
-          <CardTitle className="text-white text-2xl">Reset Password</CardTitle>
-          <CardDescription className="text-gray-400">
+          <CardTitle className="text-[#000000] text-2xl font-bold">Reset Password</CardTitle>
+          <CardDescription className="text-[#5C5C5C]">
             Enter your email address and we'll send you instructions to reset your password
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
             <Alert className="border-red-500 bg-red-500/10">
-              <AlertDescription className="text-red-400">{error}</AlertDescription>
+              <AlertDescription className="text-red-500">{error}</AlertDescription>
             </Alert>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-[#5C5C5C]" />
                 <Input
                   type="email"
                   placeholder="Email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-400"
+                  className="pl-10 bg-white border-[#E1DDFC] text-[#000000] placeholder-[#5C5C5C] focus:border-[#B6EADA]"
                   disabled={loading}
                 />
               </div>
@@ -107,7 +107,7 @@ const ForgotPassword: React.FC = () => {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white"
+              className="w-full bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] hover:from-[#A0E9CE] hover:to-[#F9D3F3] text-[#000000] font-semibold rounded-xl shadow-none border-none"
               disabled={loading}
             >
               {loading ? 'Sending...' : 'Send Reset Instructions'}
@@ -117,7 +117,7 @@ const ForgotPassword: React.FC = () => {
           <div className="text-center">
             <Link
               to="/login"
-              className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+              className="text-sm text-[#7C6FF6] hover:text-[#5C5C5C] transition-colors"
             >
               Back to Login
             </Link>

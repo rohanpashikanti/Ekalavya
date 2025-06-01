@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, RefreshCw, Bookmark, BookmarkCheck } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import EndTestDialog from './EndTestDialog';
+import LoadingSpinner from '@/components/ui/loading-spinner';
 
 interface Question {
   question: string;
@@ -242,9 +243,9 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen space-y-4">
-        <RefreshCw className="w-8 h-8 animate-spin text-blue-500" />
-        <p className="text-lg">Generating questions...</p>
+      <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+        <LoadingSpinner />
+        <p className="text-[#000000] text-lg font-medium mt-4">Generating questions...</p>
       </div>
     );
   }
@@ -311,7 +312,8 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="min-h-screen bg-[#F6F1EC] p-4">
+      <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Daily Challenge</h1>
         <div className="text-lg font-semibold">
@@ -423,6 +425,7 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
         attemptedQuestions={questions.filter(q => q.userAnswer).length}
         totalQuestions={questions.length}
       />
+      </div>
     </div>
   );
 };

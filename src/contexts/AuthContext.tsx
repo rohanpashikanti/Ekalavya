@@ -151,6 +151,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = async () => {
     try {
+      // Add a minimum loading time of 2 seconds
+      await new Promise(resolve => setTimeout(resolve, 2000));
       await firebaseSignOut(auth);
     } catch (error) {
       console.error('Sign out error:', error);

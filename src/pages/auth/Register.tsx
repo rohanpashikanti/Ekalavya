@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Mail, Lock, User, Zap } from 'lucide-react';
+import Loading from '@/components/ui/loading';
 import VerificationDialog from '@/components/auth/VerificationDialog';
 
 const Register: React.FC = () => {
@@ -46,6 +47,7 @@ const Register: React.FC = () => {
       if (error) {
         setError(error);
       } else {
+        await new Promise(resolve => setTimeout(resolve, 2000));
         setShowVerificationDialog(true);
       }
     } catch (err: any) {
@@ -57,34 +59,37 @@ const Register: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-gray-800 border-gray-700">
+      <div className="min-h-screen bg-[#F6F1EC] flex items-center justify-center p-4">
+        {loading && <Loading />}
+        <Card className="w-full max-w-md bg-white border-[#E1DDFC] rounded-2xl">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Zap className="w-8 h-8 text-white" />
-            </div>
-            <CardTitle className="text-white text-2xl font-orbitron">Join Ekalavya</CardTitle>
-            <CardDescription className="text-gray-400">
+            <img 
+              src="https://res.cloudinary.com/dcoijn5mh/image/upload/v1748758164/ChatGPT_Image_Jun_1_2025_11_38_47_AM_ua430e.png"
+              alt="Ekalavya Logo"
+              className="w-16 h-16 mx-auto mb-4"
+            />
+            <CardTitle className="text-[#000000] text-2xl font-bold">Join Ekalavya</CardTitle>
+            <CardDescription className="text-[#5C5C5C]">
               Create your account to start your journey
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
               <Alert className="border-red-500 bg-red-500/10">
-                <AlertDescription className="text-red-400">{error}</AlertDescription>
+                <AlertDescription className="text-red-500">{error}</AlertDescription>
               </Alert>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-[#5C5C5C]" />
                   <Input
                     type="email"
                     placeholder="Email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-400"
+                    className="pl-10 bg-white border-[#E1DDFC] text-[#000000] placeholder-[#5C5C5C] focus:border-[#B6EADA]"
                     disabled={loading}
                   />
                 </div>
@@ -92,19 +97,19 @@ const Register: React.FC = () => {
 
               <div className="space-y-2">
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-[#5C5C5C]" />
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-400"
+                    className="pl-10 pr-10 bg-white border-[#E1DDFC] text-[#000000] placeholder-[#5C5C5C] focus:border-[#B6EADA]"
                     disabled={loading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-200"
+                    className="absolute right-3 top-3 text-[#5C5C5C] hover:text-[#000000]"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -113,13 +118,13 @@ const Register: React.FC = () => {
 
               <div className="space-y-2">
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-[#5C5C5C]" />
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Confirm password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-400"
+                    className="pl-10 bg-white border-[#E1DDFC] text-[#000000] placeholder-[#5C5C5C] focus:border-[#B6EADA]"
                     disabled={loading}
                   />
                 </div>
@@ -127,7 +132,7 @@ const Register: React.FC = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white"
+                className="w-full bg-gradient-to-r from-[#B6EADA] to-[#F6C6EA] hover:from-[#A0E9CE] hover:to-[#F9D3F3] text-[#000000] font-semibold rounded-xl shadow-none border-none"
                 disabled={loading}
               >
                 {loading ? 'Creating account...' : 'Create Account'}
@@ -135,11 +140,11 @@ const Register: React.FC = () => {
             </form>
 
             <div className="text-center">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-[#5C5C5C]">
                 Already have an account?{' '}
                 <Link
                   to="/login"
-                  className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                  className="text-[#7C6FF6] hover:text-[#5C5C5C] transition-colors"
                 >
                   Sign in
                 </Link>
