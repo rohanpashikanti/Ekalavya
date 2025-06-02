@@ -16,6 +16,7 @@ import Leaderboard from "./pages/Leaderboard";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import AptitudeTest from "./components/AptitudeTest";
+import AIPage from "./pages/AI";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,11 @@ const App = () => (
             <Route path="/aptitude-test" element={
               <AuthGuard>
                 <AptitudeTest />
+              </AuthGuard>
+            } />
+            <Route path="/ai" element={
+              <AuthGuard>
+                <AIPage />
               </AuthGuard>
             } />
             

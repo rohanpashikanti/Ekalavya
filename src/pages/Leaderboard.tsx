@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Layout from '../components/layout/Layout';
 
 const AUTHOR_IMAGE = "https://res.cloudinary.com/dcoijn5mh/image/upload/v1748765182/WhatsApp_Image_2025-06-01_at_13.35.23_1_ozhzsu.jpg";
@@ -6,6 +6,9 @@ const IMAGE_2 = "https://res.cloudinary.com/dcoijn5mh/image/upload/v1748765182/W
 const IMAGE_3 = "https://res.cloudinary.com/dcoijn5mh/image/upload/v1748765182/WhatsApp_Image_2025-06-01_at_13.35.24_wmphs2.jpg";
 
 const AuthorPage: React.FC = () => {
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+
   return (
     <Layout>
       <div className="flex items-center justify-center min-h-[80vh] w-full bg-white">

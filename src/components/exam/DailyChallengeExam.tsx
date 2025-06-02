@@ -159,7 +159,7 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
       setTimeLeft(t => {
         if (t <= 1) {
           clearInterval(timerRef.current!);
-          handleEndTest();
+          handleConfirmEndTest();  // Directly submit without showing dialog
           return 0;
         }
         return t - 1;
