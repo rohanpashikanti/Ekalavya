@@ -92,7 +92,32 @@ serve(async (req) => {
         For each weak area, include at least 2 questions.
         Ensure questions are appropriate for the user's current skill level.
         Include real-world scenarios and practical applications where possible.
-        Mix easy, medium, and hard questions based on the difficulty level.`;
+        Mix easy, medium, and hard questions based on the difficulty level.
+
+        Important:
+        - Each question must have exactly one correct answer
+        - All options must be distinct and valid
+        - Include clear explanations for each answer
+        - For coding-decoding questions:
+          * Ensure the coding pattern is consistent and logical
+          * Provide clear rules for encoding/decoding
+          * Avoid ambiguous or multiple possible interpretations
+          * Include step-by-step explanations
+        - For number system questions:
+          * Ensure all calculations are accurate
+          * Provide clear step-by-step solutions
+          * Avoid ambiguous or unclear questions
+          * Include proper explanations for each step
+        - For logical reasoning questions:
+          * Ensure logical consistency
+          * Provide clear reasoning steps
+          * Avoid ambiguous scenarios
+          * Include detailed explanations
+        - For verbal ability questions:
+          * Ensure grammar and vocabulary are accurate
+          * Provide clear context
+          * Avoid ambiguous language
+          * Include proper explanations`;
 
       const fullPrompt = `${dailyPrompt}
 
@@ -116,7 +141,31 @@ serve(async (req) => {
       - Correct answer should be A, B, C, or D (not option_a, option_b, etc.)
       - Include more questions from the user's weak areas
       - Vary the difficulty based on user's performance in each area
-      - Ensure proper distribution of questions across topics`;
+      - Ensure proper distribution of questions across topics
+      - Each question must have exactly one correct answer
+      - All options must be distinct and valid
+      - Avoid ambiguous or unclear questions
+      - Ensure questions test understanding, not just memorization
+      - For coding-decoding questions:
+        * Ensure the coding pattern is consistent and logical
+        * Provide clear rules for encoding/decoding
+        * Avoid ambiguous or multiple possible interpretations
+        * Include step-by-step explanations
+      - For number system questions:
+        * Ensure all calculations are accurate
+        * Provide clear step-by-step solutions
+        * Avoid ambiguous or unclear questions
+        * Include proper explanations for each step
+      - For logical reasoning questions:
+        * Ensure logical consistency
+        * Provide clear reasoning steps
+        * Avoid ambiguous scenarios
+        * Include detailed explanations
+      - For verbal ability questions:
+        * Ensure grammar and vocabulary are accurate
+        * Provide clear context
+        * Avoid ambiguous language
+        * Include proper explanations`;
 
       // Call Gemini API
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
@@ -263,14 +312,30 @@ serve(async (req) => {
     // Define prompts for different topics with personalized focus
     const topicPrompts = {
       'quantitative': `Generate 20 multiple choice questions on Quantitative Aptitude covering topics like:
-        - Arithmetic (Percentage, Profit & Loss, Simple & Compound Interest, Time Speed Distance)
-        - Number System (Divisibility, HCF/LCM, Prime Numbers)
-        - Algebra and Data Interpretation
-        Difficulty level: ${adjustedDifficulty}
+        - Arithmetic Operations
+        - Percentages and Ratios
+        - Time and Work
+        - Speed and Distance
+        - Profit and Loss
+        - Averages
+        - Simple and Compound Interest
+        - Mixtures and Alligations
+        - Geometry
+        - Probability
+        Difficulty level: ${difficulty}
         Focus more on these weak areas: ${weakAreas.join(', ')}
-        For each weak area, include at least 3 questions.
-        Ensure questions are appropriate for the user's current skill level.
-        Include real-world scenarios and practical applications where possible.`,
+        
+        Important:
+        - Each question must have exactly one correct answer
+        - All options must be distinct and valid
+        - Include clear explanations for each answer
+        - Ensure questions test understanding, not just memorization
+        - Avoid ambiguous or unclear questions
+        - For number system questions:
+          * Ensure all calculations are accurate
+          * Provide clear step-by-step solutions
+          * Avoid ambiguous or unclear questions
+          * Include proper explanations for each step`,
       
       'logical': `Generate 20 multiple choice questions on Logical Reasoning covering topics like:
         - Verbal Reasoning (Blood Relations, Directions, Seating Arrangements)
@@ -279,9 +344,21 @@ serve(async (req) => {
         - Syllogisms and Analogies
         Difficulty level: ${adjustedDifficulty}
         Focus more on these weak areas: ${weakAreas.join(', ')}
-        For each weak area, include at least 3 questions.
-        Ensure questions are appropriate for the user's current skill level.
-        Include real-world scenarios and practical applications where possible.`,
+        
+        Important:
+        - Each question must have exactly one correct answer
+        - All options must be distinct and valid
+        - Include clear explanations for each answer
+        - For coding-decoding questions:
+          * Ensure the coding pattern is consistent and logical
+          * Provide clear rules for encoding/decoding
+          * Avoid ambiguous or multiple possible interpretations
+          * Include step-by-step explanations
+        - For logical reasoning questions:
+          * Ensure logical consistency
+          * Provide clear reasoning steps
+          * Avoid ambiguous scenarios
+          * Include detailed explanations`,
       
       'verbal': `Generate 20 multiple choice questions on Verbal Ability covering topics like:
         - Reading Comprehension
@@ -324,20 +401,62 @@ serve(async (req) => {
         - Properties of Numbers, Division Rules
         - Prime Factorization, HCF and LCM
         - Remainders and Trailing Zeroes
+        - Number Series and Sequences
+        - Base Systems and Conversions
+        - Divisibility Rules
+        - Factors and Multiples
+        - Number Properties (Even, Odd, Prime, Composite)
+        - Modular Arithmetic
+        - Number Patterns
         Difficulty level: ${difficulty}
-        Focus more on these weak areas: ${weakAreas.join(', ')}`,
+        Focus more on these weak areas: ${weakAreas.join(', ')}
+        
+        Important:
+        - Each question must have exactly one correct answer
+        - All options must be distinct and valid
+        - Include clear explanations for each answer
+        - Ensure questions test understanding, not just memorization
+        - Avoid ambiguous or unclear questions`,
       
       'verbal-reasoning': `Generate 20 multiple choice questions on Verbal Reasoning covering:
-        - Directions and Distance, Blood Relations
+        - Directions and Distance
+        - Blood Relations
         - Seating Arrangements (Circular, Linear)
         - Coding Decoding (Letter, Number, Mixed)
+        - Logical Deduction
+        - Syllogisms
+        - Statement and Arguments
+        - Statement and Assumptions
+        - Statement and Conclusions
+        - Cause and Effect
         Difficulty level: ${difficulty}
-        Focus more on these weak areas: ${weakAreas.join(', ')}`,
+        Focus more on these weak areas: ${weakAreas.join(', ')}
+        
+        Important:
+        - Each question must have exactly one correct answer
+        - All options must be distinct and valid
+        - Include clear explanations for each answer
+        - For coding-decoding questions:
+          * Keep the questions simple and straightforward
+          * Use basic letter/number patterns (e.g., A+1=B, 1+1=2)
+          * Avoid complex or multi-step patterns
+          * Use common words and simple numbers
+          * Provide clear examples before the question
+          * Make the pattern obvious and easy to spot
+          * Include step-by-step explanations
+        - Ensure questions test understanding, not just memorization`,
       
       'analogical-reasoning': `Generate 20 multiple choice questions on Analogical and Abductive Reasoning covering:
         - Analogy and Classification
-        - Number Series, Syllogisms
+        - Number Series
+        - Syllogisms
         - Venn diagrams and conclusions
+        - Logical Deduction
+        - Pattern Recognition
+        - Relationship Analysis
+        - Similarity and Difference
+        - Cause and Effect
+        - Logical Sequence
         Difficulty level: ${difficulty}
         Focus more on these weak areas: ${weakAreas.join(', ')}`
     };
@@ -364,7 +483,24 @@ serve(async (req) => {
     - Provide clear, concise explanations
     - Correct answer should be A, B, C, or D (not option_a, option_b, etc.)
     - Include more questions from the user's weak areas
-    - Vary the difficulty based on user's performance in each area`;
+    - Vary the difficulty based on user's performance in each area
+    - Each question must have exactly one correct answer
+    - All options must be distinct and valid
+    - Avoid ambiguous or unclear questions
+    - Ensure questions test understanding, not just memorization
+    - For coding-decoding questions:
+      * Keep the questions simple and straightforward
+      * Use basic letter/number patterns (e.g., A+1=B, 1+1=2)
+      * Avoid complex or multi-step patterns
+      * Use common words and simple numbers
+      * Provide clear examples before the question
+      * Make the pattern obvious and easy to spot
+      * Include step-by-step explanations
+    - For number system questions:
+      * Ensure all calculations are accurate
+      * Provide clear step-by-step solutions
+      * Avoid ambiguous or unclear questions
+      * Include proper explanations for each step`;
 
     // Call Gemini API
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`, {
