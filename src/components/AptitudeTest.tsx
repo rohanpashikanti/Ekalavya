@@ -6,6 +6,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, RefreshCw, Bookmark, BookmarkCheck } from 'lucide-react';
 import EndTestDialog from './exam/EndTestDialog';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import TabSwitchDialog from './exam/TabSwitchDialog';
+import useTabSwitchDetection from '@/hooks/useTabSwitchDetection';
 
 interface Question {
   question: string;
@@ -63,6 +65,14 @@ const AptitudeTest = () => {
   const [showEndDialog, setShowEndDialog] = useState(false);
 
   const genAI = new GoogleGenerativeAI('AIzaSyDSNKVFGhfCCX6Onx5b8NEyk38qTH-YRXg');
+
+  const handleMaxAttemptsReached = () => {
+    handleConfirmEndTest();
+  };
+
+  const { remainingAttempts, showDialog, closeDialog } = useTabSwitchDetection({
+    onMaxAttemptsReached: handleMaxAttemptsReached,
+  });
 
   // Generate 20 MCQ questions based on topic
   const generateQuestions = async (topic: string) => {
@@ -272,7 +282,7 @@ const AptitudeTest = () => {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="min-h-screen bg-[#F6F1EC] p-4">
       {/* Sidebar */}
       <div className="w-56 bg-white border-r flex flex-col items-center py-6">
         <div className="mb-6 font-bold text-lg">All Questions</div>
@@ -368,6 +378,12 @@ const AptitudeTest = () => {
         onConfirm={handleConfirmEndTest}
         attemptedQuestions={questions.filter(q => q.userAnswer).length}
         totalQuestions={questions.length}
+      />
+      <TabSwitchDialog
+        isOpen={showDialog}
+        onClose={closeDialog}
+        remainingAttempts={remainingAttempts}
+        onConfirm={handleConfirmEndTest}
       />
     </div>
   );

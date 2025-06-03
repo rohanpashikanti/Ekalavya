@@ -6,6 +6,8 @@ import { AlertCircle, RefreshCw, Bookmark, BookmarkCheck } from 'lucide-react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import EndTestDialog from './EndTestDialog';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import TabSwitchDialog from './TabSwitchDialog';
+import useTabSwitchDetection from '@/hooks/useTabSwitchDetection';
 
 interface Question {
   question: string;
@@ -194,6 +196,14 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
   const min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
   const sec = (timeLeft % 60).toString().padStart(2, '0');
 
+  const handleMaxAttemptsReached = () => {
+    handleConfirmEndTest();
+  };
+
+  const { remainingAttempts, showDialog, closeDialog } = useTabSwitchDetection({
+    onMaxAttemptsReached: handleMaxAttemptsReached,
+  });
+
   if (!examStarted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -364,6 +374,12 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
         onConfirm={handleConfirmEndTest}
         attemptedQuestions={questions.filter(q => q.userAnswer).length}
         totalQuestions={questions.length}
+      />
+      <TabSwitchDialog
+        isOpen={showDialog}
+        onClose={closeDialog}
+        remainingAttempts={remainingAttempts}
+        onConfirm={handleConfirmEndTest}
       />
     </div>
   );
