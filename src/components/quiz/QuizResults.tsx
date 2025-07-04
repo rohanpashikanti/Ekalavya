@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Clock, Target, CheckCircle, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import QuizResultPage from '@/components/quiz/QuizResultPage';
 
 interface QuizResultsProps {
   score: number;

@@ -5,7 +5,8 @@ import {
   Home,
   Brain,
   History,
-  User
+  User,
+  Code
 } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
@@ -13,6 +14,7 @@ const Sidebar: React.FC = () => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Take Quiz', href: '/quiz', icon: Brain },
+    { name: 'Technical', href: '/technical', icon: Code },
     { name: 'AI', href: '/ai', icon: () => (
       <img 
         src="https://res.cloudinary.com/dcoijn5mh/image/upload/v1748838136/ai_gnrq6h.png"

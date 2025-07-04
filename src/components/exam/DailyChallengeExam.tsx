@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -8,6 +8,8 @@ import EndTestDialog from './EndTestDialog';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import TabSwitchDialog from './TabSwitchDialog';
 import useTabSwitchDetection from '@/hooks/useTabSwitchDetection';
+import { Link, useNavigate } from 'react-router-dom';
+import UnderConstruction from '../UnderConstruction';
 
 interface Question {
   question: string;
@@ -17,6 +19,9 @@ interface Question {
   userAnswer?: string;
   markedForReview?: boolean;
   topic: string;
+  timeSpent?: number;
+  explanation?: string;
+  section: string;
 }
 
 interface DailyChallengeExamProps {
@@ -68,6 +73,8 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
   const [score, setScore] = useState(0);
   const [showEndDialog, setShowEndDialog] = useState(false);
+  const navigate = useNavigate();
+  const onCompleteCalled = useRef(false);
 
   const genAI = new GoogleGenerativeAI('AIzaSyDSNKVFGhfCCX6Onx5b8NEyk38qTH-YRXg');
 
@@ -135,7 +142,8 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
         const questionsWithState = parsedQuestions.map(q => ({
           ...q,
           userAnswer: '',
-          markedForReview: false
+          markedForReview: false,
+          section: q.topic.split(': ')[0]
         }));
         
         setQuestions(questionsWithState);
@@ -171,17 +179,11 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
   }, [examStarted, showResults, loading, error]);
 
   useEffect(() => {
-    if (showResults) {
-      let sc = 0;
-      questions.forEach(q => {
-        if (q.userAnswer && q.correctAnswer && q.userAnswer === q.correctAnswer) {
-          sc++;
-        }
-      });
-      setScore(sc);
-      onComplete(sc, TOTAL_TIME - timeLeft, questions);
+    if (showResults && questions.length > 0 && !onCompleteCalled.current) {
+      onCompleteCalled.current = true;
+      onComplete(score, TOTAL_TIME - timeLeft, questions);
     }
-  }, [showResults, questions, timeLeft, onComplete]);
+  }, [showResults, questions, timeLeft, onComplete, score]);
 
   const handleMCQ = (option: string) => {
     setQuestions(qs => qs.map((q, i) => i === currentQuestion ? { ...q, userAnswer: option } : q));
@@ -225,6 +227,71 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
   const { remainingAttempts, showDialog, closeDialog } = useTabSwitchDetection({
     onMaxAttemptsReached: handleMaxAttemptsReached,
   });
+
+  // Group questions by section for sidebar
+  const groupedQuestions = questions.reduce((acc, q, idx) => {
+    const section = q.topic?.includes('Reasoning') ? 'Logical Reasoning' : q.topic?.includes('Arithmetic') || q.topic?.includes('Profit') || q.topic?.includes('Interest') ? 'Aptitude' : 'Other';
+    if (!acc[section]) acc[section] = [];
+    acc[section].push({ ...q, idx });
+    return acc;
+  }, {} as Record<string, (Question & { idx: number })[]>);
+
+  // State for explanation loading
+  const [explanationsLoading, setExplanationsLoading] = useState(false);
+
+  // Fetch explanations after test is completed
+  useEffect(() => {
+    if (showResults && questions.length && !questions[0].explanation && !explanationsLoading) {
+      setExplanationsLoading(true);
+      Promise.all(
+        questions.map(async (q) => {
+          const correctIndex = q.options.indexOf(q.correctAnswer);
+          const correctLetter = String.fromCharCode(65 + correctIndex);
+          const prompt = `
+You are an Aptitude Answer Explainer Bot. Given a question, its options, and the correct answer, your job is to generate a clear, step-by-step explanation. Do not use any markdown, LaTeX, dollar signs, or stars. Only use plain text formatting. Keep the explanation clean, short, and understandable for placement-level students. Show calculations where required. End the explanation with the final answer clearly.
+
+Format your output like this:
+
+Question:
+${q.question}
+
+Options:
+${q.options.map((opt, i) => String.fromCharCode(65 + i) + '. ' + opt).join('\n')}
+
+Correct Answer: ${correctLetter}. ${q.correctAnswer}
+
+Explanation:
+Step 1: ...
+Step 2: ...
+Step 3: ...
+Final Answer: ${q.correctAnswer}
+          `;
+          try {
+            const response = await fetch(
+              'https://generativelanguage.googleapis.com/v1beta/models/gemini-1yes.5-flash:generateContent?key=AIzaSyBhOXRcPQ5l5vEJeR5cfj4SBMZYRfLIsto',
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: prompt }] }]
+                })
+              }
+            );
+            const data = await response.json();
+            return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          } catch {
+            return '';
+          }
+        })
+      ).then((explanations) => {
+        setQuestions(qs => qs.map((q, i) => ({
+          ...q,
+          explanation: explanations[i]
+        })));
+        setExplanationsLoading(false);
+      });
+    }
+  }, [showResults, questions, explanationsLoading]);
 
   if (!examStarted) {
     return (
@@ -274,55 +341,109 @@ const DailyChallengeExam: React.FC<DailyChallengeExamProps> = ({ onComplete }) =
 
   if (showResults) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#B6EADA] via-[#E1DDFC] to-[#F6C6EA] py-8">
-        <Card className="max-w-3xl mx-auto p-6 bg-white/80 backdrop-blur-lg border border-[#E1DDFC] shadow-lg">
-          <CardHeader>
-            <div className="flex flex-col space-y-4">
-              <Button 
-                variant="outline" 
-                onClick={() => window.location.href = '/dashboard'}
-                className="w-fit border-[#E1DDFC] text-[#5C5C5C] hover:bg-[rgb(204,220,251)] hover:border-[rgb(204,220,251)] hover:text-[#000000]"
-              >
-                ← Back to Dashboard
-              </Button>
-              <CardTitle className="text-2xl font-bold text-[#000000]">Daily Challenge Results</CardTitle>
+      <div className="flex min-h-screen bg-gray-50">
+        {/* Sidebar */}
+        <div className="w-72 bg-gray-800 text-white flex flex-col p-4 gap-4 rounded-xl shadow-lg">
+          {Object.entries(groupedQuestions).map(([section, qs]) => (
+            <div key={section} className="mb-6">
+              <div className="font-bold text-lg mb-2">{section}</div>
+              <div className="grid grid-cols-5 gap-2">
+                {qs.map((q) => (
+                  <button
+                    key={q.idx}
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold border-2 transition-all
+                      ${q.userAnswer === q.correctAnswer ? 'bg-green-400 text-black' : ''}
+                      ${q.userAnswer && q.userAnswer !== q.correctAnswer ? 'bg-red-400 text-black' : ''}
+                      ${!q.userAnswer ? 'bg-gray-400 text-black' : ''}
+                      hover:scale-105`}
+                    onClick={() => {
+                      setCurrentQuestion(q.idx);
+                      document.getElementById(`question-${q.idx}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
+                    title={`Q${q.idx + 1}`}
+                  >
+                    {q.idx + 1}
+                  </button>
+                ))}
+              </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="text-xl font-semibold text-[#000000]">Your Score: {score} / {questions.length}</div>
-              {questions.map((q, idx) => (
-                <div key={idx} className="p-3 border border-[#E1DDFC] rounded bg-white/50">
+          ))}
+        </div>
+        {/* Main Result Content */}
+        <div className="flex-1 pl-8 pr-4 py-8 overflow-y-auto" style={{ maxHeight: '100vh' }}>
+          <Card className="max-w-3xl mx-auto p-6 bg-white/80 backdrop-blur-lg border border-[#E1DDFC] shadow-lg mb-8">
+            <CardHeader>
+              <div className="flex flex-col space-y-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.location.href = '/dashboard'}
+                  className="w-fit border-[#E1DDFC] text-[#5C5C5C] hover:bg-[rgb(204,220,251)] hover:border-[rgb(204,220,251)] hover:text-[#000000]"
+                >
+                  ← Back to Dashboard
+                </Button>
+                <CardTitle className="text-2xl font-bold text-[#000000]">Daily Challenge Results</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="text-xl font-semibold text-[#000000]">Your Score: {score} / {questions.length}</div>
+              </div>
+            </CardContent>
+          </Card>
+          {explanationsLoading && (
+            null
+          )}
+          {questions.map((q, idx) => (
+            <Card key={idx} className="max-w-3xl mx-auto mb-6" id={`question-${idx}`}>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold bg-yellow-200 text-black">{idx + 1}</span>
+                  <span className="text-lg font-semibold">{q.topic}</span>
+                  {q.markedForReview && <BookmarkCheck className="w-4 h-4 text-purple-500" />}
+                </div>
+                <div className="text-lg font-medium mb-4">{q.question}</div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  {q.options.map((opt, i) => (
+                    <div
+                      key={opt}
+                      className={`border rounded p-2 flex items-center gap-2 ${q.userAnswer === opt ? (q.userAnswer === q.correctAnswer ? 'bg-green-100 border-green-500' : 'bg-red-100 border-red-500') : ''}`}
+                    >
+                      <input
+                        type="radio"
+                        checked={q.userAnswer === opt}
+                        readOnly
+                        className="accent-cyan-600"
+                      />
+                      <span>{String.fromCharCode(65 + i)}. {opt}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-4 mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-[#000000]">Q.{idx + 1}</span>
-                    <span className="text-xs bg-[#E1DDFC] px-2 py-0.5 rounded text-[#5C5C5C]">MCQ</span>
-                    {q.markedForReview && <BookmarkCheck className="w-4 h-4 text-[#F6C6EA]" />}
+                    <span className="font-semibold">Correct Answer:</span>
+                    <span className="text-green-700 font-bold">{q.correctAnswer}</span>
                   </div>
-                  <div className="text-[#5C5C5C] mb-2">{q.question}</div>
-                  <div>
-                    <span className="font-semibold text-[#000000]">Your answer: </span>
-                    {q.userAnswer ? (
-                      <span className="text-[#5C5C5C]">
-                        {String.fromCharCode(65 + q.options.indexOf(q.userAnswer))}. {q.userAnswer}
-                      </span>
-                    ) : (
-                      <span className="text-[#5C5C5C]">Not answered</span>
-                    )}
-                    <span className="ml-2 text-xs text-[#B6EADA]">
-                      (Correct: {String.fromCharCode(65 + q.options.indexOf(q.correctAnswer))}. {q.correctAnswer})
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">Your Answer:</span>
+                    <span className={q.userAnswer === q.correctAnswer ? 'text-green-700 font-bold' : q.userAnswer ? 'text-red-700 font-bold' : 'text-gray-500'}>
+                      {q.userAnswer || 'Not Answered'}
                     </span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">Status:</span>
+                    <span className={`px-2 py-1 rounded text-sm ${q.userAnswer ? (q.userAnswer === q.correctAnswer ? 'bg-green-500 text-white' : 'bg-red-500 text-white') : 'bg-gray-400 text-white'}`}>{q.userAnswer ? (q.userAnswer === q.correctAnswer ? 'Correct' : 'Incorrect') : 'Not Answered'}</span>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F6F1EC] p-4">
+    <div className="min-h-screen bg-[#F6F1EC] p-4 exam-content">
       <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Daily Challenge</h1>

@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, RefreshCw, Bookmark, BookmarkCheck } from 'lucide-react';
-import EndTestDialog from './exam/EndTestDialog';
+import { AlertCircle, Bookmark, BookmarkCheck } from 'lucide-react';
+import EndTestDialog from './EndTestDialog';
 import LoadingSpinner from '@/components/ui/loading-spinner';
-import TabSwitchDialog from './exam/TabSwitchDialog';
+import TabSwitchDialog from './TabSwitchDialog';
 import useTabSwitchDetection from '@/hooks/useTabSwitchDetection';
 
 interface Question {
@@ -19,39 +19,31 @@ interface Question {
 }
 
 const TOPICS = [
-  // Quantitative Aptitude
-  'Percentages',
-  'Profit and Loss',
-  'Averages',
-  'Ratio and Proportion',
-  'Time and Work',
-  'Pipes and Cisterns',
-  
-  // Time, Speed & Distance
-  'Trains',
-  'Boats and Streams',
-  'Time, Speed and Distance',
-  
-  // Interest
-  'Simple and Compound Interest',
-  
-  // Reasoning
-  'Directions and Distances',
-  'Blood Relations',
-  'Seating Arrangements',
-  'Syllogisms',
-  'Analogy and Classification',
-  
-  // Series and Coding
-  'Number Series',
-  'Letter Coding',
-  'Number Coding',
-  'Letter and Number Mixed Coding',
+  'Python Basics',
+  'Data Types & Type Casting',
+  'Control Flow (if, for, while)',
+  'Functions & Recursion',
+  'Object-Oriented Programming',
+  'Exception Handling',
+  'File Handling',
+  'Python Libraries (NumPy, Pandas)',
+  'List & Dictionary Comprehensions',
+  'Lambda, Map, Filter, Reduce',
+  'Iterators & Generators',
+  'Regular Expressions',
+  'Modules & Packages',
+  'Decorators & Closures',
+  'Data Structures in Python (List, Dict, Set, Tuple)',
+  'Algorithms (Searching, Sorting)',
+  'Time & Space Complexity in Python',
+  'Mock Interviews: Python Coding',
+  'Debugging & Code Tracing',
+  'Placement-focused MCQs'
 ];
 
 const TOTAL_TIME = 40 * 60; // 40 minutes in seconds
 
-const AptitudeTest = () => {
+const TechnicalTheoryExam = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -73,91 +65,6 @@ const AptitudeTest = () => {
   const { remainingAttempts, showDialog, closeDialog } = useTabSwitchDetection({
     onMaxAttemptsReached: handleMaxAttemptsReached,
   });
-
-  // Generate 20 MCQ questions based on topic
-  const generateQuestions = async (topic: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-      const prompt = `Generate 20 MCQ aptitude test questions on the topic '${topic}'. Each question should be of medium to hard difficulty level. Each question should have:\n- type: 'mcq'\n- question: string\n- options: array of 4 possible answer values (e.g., [\"10%\", \"8%\", \"12%\", \"15%\"])\n- correctAnswer: one of the options (the value, not the letter)\nRespond ONLY with a valid JSON array, no explanation, no markdown, no extra text.`;
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      let parsedQuestions: Question[] = [];
-      try {
-        // Extract JSON array from the response
-        const match = text.match(/\[.*\]/s);
-        if (!match) throw new Error('No JSON array found in response.');
-        parsedQuestions = JSON.parse(match[0]);
-        if (!Array.isArray(parsedQuestions) || parsedQuestions.length !== 20) throw new Error('Invalid format');
-        // Validate all are MCQ and have 4 options
-        parsedQuestions = parsedQuestions.filter(q => q.type === 'mcq' && Array.isArray(q.options) && q.options.length === 4 && typeof q.correctAnswer === 'string');
-        if (parsedQuestions.length !== 20) throw new Error('Not all questions are valid MCQ.');
-      } catch {
-        throw new Error('Failed to parse questions. Please try again.');
-      }
-      setQuestions(parsedQuestions.map(q => ({ ...q, userAnswer: '', markedForReview: false })));
-      setCurrentQuestion(0);
-      setShowResults(false);
-      setTimeLeft(TOTAL_TIME);
-      setScore(0);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to start quiz. Please try again.');
-    }
-    setLoading(false);
-  };
-
-  // Timer logic
-  useEffect(() => {
-    if (!examStarted || showResults || loading || error) return;
-    timerRef.current = setInterval(() => {
-      setTimeLeft(t => {
-        if (t <= 1) {
-          clearInterval(timerRef.current!);
-          handleConfirmEndTest();  // Directly submit without showing dialog
-          return 0;
-        }
-        return t - 1;
-      });
-    }, 1000);
-    return () => clearInterval(timerRef.current!);
-  }, [examStarted, showResults, loading, error]);
-
-  // Score calculation (MCQ only)
-  useEffect(() => {
-    if (showResults) {
-      let sc = 0;
-      questions.forEach(q => {
-        if (q.userAnswer && q.correctAnswer && q.userAnswer === q.correctAnswer) {
-          sc++;
-        }
-      });
-      setScore(sc);
-    }
-  }, [showResults, questions]);
-
-  // Store exam result in localStorage
-  useEffect(() => {
-    if (showResults && questions.length > 0) {
-      const historyKey = 'aiAptitudeHistory';
-      const prev = JSON.parse(localStorage.getItem(historyKey) || '[]');
-      const newEntry = {
-        topic: selectedTopic,
-        score,
-        total: questions.length,
-        date: new Date().toISOString(),
-        questions: questions.map(q => ({
-          question: q.question,
-          options: q.options,
-          correctAnswer: q.correctAnswer,
-          userAnswer: q.userAnswer,
-          markedForReview: q.markedForReview,
-        })),
-      };
-      localStorage.setItem(historyKey, JSON.stringify([newEntry, ...prev]));
-    }
-  }, [showResults]);
 
   // Add effect to disable text selection and copying
   useEffect(() => {
@@ -181,6 +88,66 @@ const AptitudeTest = () => {
       };
     }
   }, [examStarted, showResults]);
+
+  const generateQuestions = async (topic: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const prompt = `Generate 20 MCQ technical theory questions on the topic '${topic}'. Each question should be of medium to hard difficulty level. Each question should have:\n- type: 'mcq'\n- question: string\n- options: array of 4 possible answer values\n- correctAnswer: one of the options (the value, not the letter)\nRespond ONLY with a valid JSON array, no explanation, no markdown, no extra text.`;
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      let parsedQuestions: Question[] = [];
+      try {
+        const match = text.match(/\[.*\]/s);
+        if (!match) throw new Error('No JSON array found in response.');
+        parsedQuestions = JSON.parse(match[0]);
+        if (!Array.isArray(parsedQuestions) || parsedQuestions.length !== 20) throw new Error('Invalid format');
+        parsedQuestions = parsedQuestions.filter(q => q.type === 'mcq' && Array.isArray(q.options) && q.options.length === 4 && typeof q.correctAnswer === 'string');
+        if (parsedQuestions.length !== 20) throw new Error('Not all questions are valid MCQ.');
+      } catch {
+        throw new Error('Failed to parse questions. Please try again.');
+      }
+      setQuestions(parsedQuestions.map(q => ({ ...q, userAnswer: '', markedForReview: false })));
+      setCurrentQuestion(0);
+      setShowResults(false);
+      setTimeLeft(TOTAL_TIME);
+      setScore(0);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to start quiz. Please try again.');
+    }
+    setLoading(false);
+  };
+
+  // Timer logic
+  useEffect(() => {
+    if (!examStarted || showResults || loading || error) return;
+    timerRef.current = setInterval(() => {
+      setTimeLeft(t => {
+        if (t <= 1) {
+          clearInterval(timerRef.current!);
+          handleConfirmEndTest();
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timerRef.current!);
+  }, [examStarted, showResults, loading, error]);
+
+  // Score calculation
+  useEffect(() => {
+    if (showResults) {
+      let sc = 0;
+      questions.forEach(q => {
+        if (q.userAnswer && q.correctAnswer && q.userAnswer === q.correctAnswer) {
+          sc++;
+        }
+      });
+      setScore(sc);
+    }
+  }, [showResults, questions]);
 
   const handleMCQ = (option: string) => {
     setQuestions(qs => qs.map((q, i) => i === currentQuestion ? { ...q, userAnswer: option } : q));
@@ -207,7 +174,6 @@ const AptitudeTest = () => {
     await generateQuestions(selectedTopic);
   };
 
-  // Status helpers
   const getStatus = (q: Question) => {
     if (q.userAnswer && q.markedForReview) return 'answered-marked';
     if (q.userAnswer) return 'answered';
@@ -215,11 +181,9 @@ const AptitudeTest = () => {
     return 'not-answered';
   };
 
-  // Timer display
   const min = Math.floor(timeLeft / 60).toString().padStart(2, '0');
   const sec = (timeLeft % 60).toString().padStart(2, '0');
 
-  // Start screen
   if (!examStarted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -228,10 +192,10 @@ const AptitudeTest = () => {
             className="mb-4 category-btn"
             onClick={() => window.history.back()}
           >
-            ← Back to Quiz
+            ← Back to Technical Quiz
           </button>
           <div className="rounded-card soft-shadow p-8 flex flex-col gap-4 card-interior">
-            <div className="heading-hero mb-2">Start Aptitude Exam</div>
+            <div className="heading-hero mb-2">Technical Theory Exam</div>
             <div className="text-2xl font-medium mb-4" style={{ color: '#5C5C5C' }}>
               Select Topic
             </div>
@@ -262,6 +226,7 @@ const AptitudeTest = () => {
       </div>
     );
   }
+
   if (error) {
     return (
       <div className="max-w-2xl mx-auto p-6">
@@ -273,6 +238,7 @@ const AptitudeTest = () => {
       </div>
     );
   }
+
   if (showResults) {
     return (
       <Card className="max-w-3xl mx-auto p-6">
@@ -456,4 +422,4 @@ const AptitudeTest = () => {
   );
 };
 
-export default AptitudeTest; 
+export default TechnicalTheoryExam; 

@@ -15,6 +15,10 @@ import {
 } from "@/components/ui/dialog";
 import EndTestDialog from './EndTestDialog';
 import LoadingSpinner from '@/components/ui/loading-spinner';
+import TabSwitchDialog from './TabSwitchDialog';
+import useTabSwitchDetection from '@/hooks/useTabSwitchDetection';
+import QuizResultPage from '@/components/quiz/QuizResultPage';
+import { Link } from 'react-router-dom';
 
 interface ReadingComprehension {
   paragraph: string;
@@ -35,11 +39,32 @@ interface VerbalAbilityExamProps {
   onComplete: (score: number, timeTaken: number, questions: Question[]) => void;
 }
 
-const TOTAL_TIME = 25 * 60; // 40 minutes in seconds
+const TOTAL_TIME = 25 * 60; // 25 minutes in seconds
 const TOTAL_QUESTIONS = 20;
-const READING_COMP_QUESTIONS = 8;
-const GRAMMAR_QUESTIONS = 6;
-const VOCABULARY_QUESTIONS = 6;
+
+const TOPICS = {
+  READING_COMPREHENSION: [
+    'Reading Comprehension',
+    'Cloze Test',
+    'Critical Reasoning',
+    'Precis Summary & Central Idea Identification'
+  ],
+  GRAMMAR: [
+    'Para Jumbles',
+    'Sentence Correction',
+    'Common Grammar Errors',
+    'Prepositions',
+    'Phrasal Verbs'
+  ],
+  VOCABULARY: [
+    'Idioms and Phrases',
+    'One Word Substitutions',
+    'Synonyms and Antonyms',
+    'Confusing Words',
+    'Root Words',
+    'Prefixes and Suffixes'
+  ]
+};
 
 const VerbalAbilityExam: React.FC<VerbalAbilityExamProps> = ({ onComplete }) => {
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -61,63 +86,34 @@ const VerbalAbilityExam: React.FC<VerbalAbilityExamProps> = ({ onComplete }) => 
     try {
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
       
-      const prompt = `Generate a Verbal Ability exam with the following structure:
+      // Randomly select topics for this exam
+      const selectedTopics = {
+        reading: TOPICS.READING_COMPREHENSION.sort(() => 0.5 - Math.random()).slice(0, 2),
+        grammar: TOPICS.GRAMMAR.sort(() => 0.5 - Math.random()).slice(0, 2),
+        vocabulary: TOPICS.VOCABULARY.sort(() => 0.5 - Math.random()).slice(0, 2)
+      };
 
-1. Reading Comprehension (8 questions total):
-   - Generate 2 different paragraphs, each followed by 4 questions
-   - Each paragraph should be 150-200 words long
-   - Questions should test understanding, inference, and critical analysis
-   - Format for each paragraph section:
-     {
-       "paragraph": "the reading passage",
-       "questions": [
-         {
-           "question": "question text",
-           "options": ["option1", "option2", "option3", "option4"],
-           "correctAnswer": "correct option text",
-           "type": "mcq"
-         }
-         // 4 questions per paragraph
-       ]
-     }
-
-2. Grammar (6 questions):
-   - Verb tenses
-   - Sentence correction
-   - Subject-verb agreement
-   - Parts of speech
-   Format: {
-     "question": "question text",
-     "options": ["option1", "option2", "option3", "option4"],
-     "correctAnswer": "correct option text",
-     "type": "mcq"
-   }
-
-3. Vocabulary (6 questions):
-   - Synonyms and antonyms
-   - Word meanings
-   - Contextual usage
-   Format: {
-     "question": "question text",
-     "options": ["option1", "option2", "option3", "option4"],
-     "correctAnswer": "correct option text",
-     "type": "mcq"
-   }
-
-Return a JSON object with this structure:
-{
-  "readingComprehension": [paragraph1, paragraph2],
-  "grammar": [6 grammar questions],
-  "vocabulary": [6 vocabulary questions]
-}
-
-Each question should:
-- Be beginner to intermediate difficulty
-- Have 4 options
-- Include clear explanations
-- Be unique and challenging
-
-Return ONLY a valid JSON object, no other text.`;
+      const prompt = `Generate 20 medium to hard level multiple choice questions for Verbal Ability covering the following topics:
+      
+      Reading & Comprehension:
+      ${selectedTopics.reading.map(t => `- ${t}`).join('\n')}
+      
+      Grammar & Sentence Structure:
+      ${selectedTopics.grammar.map(t => `- ${t}`).join('\n')}
+      
+      Vocabulary & Usage:
+      ${selectedTopics.vocabulary.map(t => `- ${t}`).join('\n')}
+      
+      Each question should have 4 options and one correct answer.
+      Format each question as a JSON object with:
+      {
+        "question": "question text",
+        "options": ["option1", "option2", "option3", "option4"],
+        "correctAnswer": "correct option text",
+        "type": "mcq",
+        "topic": "specific topic from the list above"
+      }
+      Return ONLY a valid JSON array of these objects, no other text.`;
 
       const result = await model.generateContent(prompt);
       const response = await result.response;
@@ -125,50 +121,28 @@ Return ONLY a valid JSON object, no other text.`;
       
       // Clean the response text to ensure it's valid JSON
       const cleanedText = text.replace(/```json\n?|\n?```/g, '').trim();
+      let parsedQuestions: Question[] = [];
       
       try {
-        const parsedData = JSON.parse(cleanedText);
-        
-        // Combine all questions into a single array
-        const allQuestions: Question[] = [
-          // Reading Comprehension questions
-          ...parsedData.readingComprehension.flatMap((section: ReadingComprehension) => 
-            section.questions.map(q => ({
-              ...q,
-              paragraph: section.paragraph,
-              userAnswer: '',
-              markedForReview: false
-            }))
-          ),
-          // Grammar questions
-          ...parsedData.grammar.map((q: Question) => ({
-            ...q,
-            userAnswer: '',
-            markedForReview: false
-          })),
-          // Vocabulary questions
-          ...parsedData.vocabulary.map((q: Question) => ({
-            ...q,
-            userAnswer: '',
-            markedForReview: false
-          }))
-        ];
-        
-        setQuestions(allQuestions);
-        setCurrentQuestion(0);
-        setShowResults(false);
-        setTimeLeft(TOTAL_TIME);
-        setScore(0);
-      } catch (parseError) {
-        console.error('Error parsing questions:', parseError);
+        const match = cleanedText.match(/\[.*\]/s);
+        if (!match) throw new Error('No JSON array found in response.');
+        parsedQuestions = JSON.parse(match[0]);
+        if (!Array.isArray(parsedQuestions) || parsedQuestions.length !== 20) throw new Error('Invalid format');
+        parsedQuestions = parsedQuestions.filter(q => q.type === 'mcq' && Array.isArray(q.options) && q.options.length === 4 && typeof q.correctAnswer === 'string');
+        if (parsedQuestions.length !== 20) throw new Error('Not all questions are valid MCQ.');
+      } catch {
         throw new Error('Failed to parse questions. Please try again.');
       }
+      
+      setQuestions(parsedQuestions.map(q => ({ ...q, userAnswer: '', markedForReview: false })));
+      setCurrentQuestion(0);
+      setShowResults(false);
+      setTimeLeft(TOTAL_TIME);
+      setScore(0);
     } catch (error) {
-      console.error('Error generating questions:', error);
-      setError(error instanceof Error ? error.message : 'Failed to generate questions. Please try again.');
-    } finally {
-      setLoading(false);
+      setError(error instanceof Error ? error.message : 'Failed to start quiz. Please try again.');
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -246,6 +220,37 @@ Return ONLY a valid JSON object, no other text.`;
     return questions.length - getAttemptedCount();
   };
 
+  const handleMaxAttemptsReached = () => {
+    handleConfirmEndTest();
+  };
+
+  const { remainingAttempts, showDialog, closeDialog } = useTabSwitchDetection({
+    onMaxAttemptsReached: handleMaxAttemptsReached,
+  });
+
+  // Add effect to disable text selection and copying
+  useEffect(() => {
+    if (examStarted && !showResults) {
+      const preventCopy = (e: ClipboardEvent) => {
+        e.preventDefault();
+      };
+
+      const preventSelect = (e: MouseEvent) => {
+        e.preventDefault();
+      };
+
+      document.addEventListener('copy', preventCopy);
+      document.addEventListener('selectstart', preventSelect);
+      document.addEventListener('contextmenu', preventSelect);
+
+      return () => {
+        document.removeEventListener('copy', preventCopy);
+        document.removeEventListener('selectstart', preventSelect);
+        document.removeEventListener('contextmenu', preventSelect);
+      };
+    }
+  }, [examStarted, showResults]);
+
   if (!examStarted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -261,13 +266,13 @@ Return ONLY a valid JSON object, no other text.`;
             <div className="text-2xl font-medium mb-4" style={{ color: '#5C5C5C' }}>
               Test your verbal skills with this exam covering:
               <ul className="list-disc ml-6 mt-2 text-base">
-                <li>Reading Comprehension</li>
-                <li>Grammar</li>
-                <li>Vocabulary</li>
+                <li>Reading & Comprehension</li>
+                <li>Grammar & Sentence Structure</li>
+                <li>Vocabulary & Usage</li>
               </ul>
             </div>
             <div className="text-base mb-4" style={{ color: '#5C5C5C' }}>
-              You will get 20 MCQ questions and 40 minutes to complete the exam.
+              You will get 20 MCQ questions and 25 minutes to complete the exam.
             </div>
             <button className="category-btn active w-full" onClick={handleStartExam}>Start Exam</button>
           </div>
@@ -299,58 +304,52 @@ Return ONLY a valid JSON object, no other text.`;
 
   if (showResults) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#B6EADA] via-[#E1DDFC] to-[#F6C6EA] py-8">
-        <Card className="max-w-3xl mx-auto p-6 bg-white/80 backdrop-blur-lg border border-[#E1DDFC] shadow-lg">
-          <CardHeader>
-            <div className="flex flex-col space-y-4">
-              <Button 
-                variant="outline" 
-                onClick={() => window.location.href = '/dashboard'}
-                className="w-fit border-[#E1DDFC] text-[#5C5C5C] hover:bg-[rgb(204,220,251)] hover:border-[rgb(204,220,251)] hover:text-[#000000]"
-              >
-                ← Back to Dashboard
-              </Button>
-              <CardTitle className="text-2xl font-bold text-[#000000]">Verbal Ability Results</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="text-xl font-semibold text-[#000000]">Your Score: {score} / {questions.length}</div>
-              {questions.map((q, idx) => (
-                <div key={idx} className="p-3 border border-[#E1DDFC] rounded bg-white/50">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-[#000000]">Q.{idx + 1}</span>
-                    <span className="text-xs bg-[#E1DDFC] px-2 py-0.5 rounded text-[#5C5C5C]">MCQ</span>
-                    {q.markedForReview && <BookmarkCheck className="w-4 h-4 text-[#F6C6EA]" />}
-                  </div>
-                  {q.paragraph && (
-                    <div className="text-[#5C5C5C] mb-2 italic">{q.paragraph}</div>
-                  )}
-                  <div className="text-[#5C5C5C] mb-2">{q.question}</div>
-                  <div>
-                    <span className="font-semibold text-[#000000]">Your answer: </span>
-                    {q.userAnswer ? (
-                      <span className="text-[#5C5C5C]">
-                        {String.fromCharCode(65 + q.options.indexOf(q.userAnswer))}. {q.userAnswer}
-                      </span>
-                    ) : (
-                      <span className="text-[#5C5C5C]">Not answered</span>
-                    )}
-                    <span className="ml-2 text-xs text-[#B6EADA]">
-                      (Correct: {String.fromCharCode(65 + q.options.indexOf(q.correctAnswer))}. {q.correctAnswer})
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex min-h-screen bg-gray-50">
+        {/* Sidebar */}
+        <div className="w-56 bg-white border-r flex flex-col items-center py-8 px-4 shadow-md">
+          <div className="mb-8 font-bold text-lg">Menu</div>
+          <Link
+            to="/dashboard"
+            className="mb-4 w-full text-center py-2 rounded bg-cyan-600 text-white hover:bg-cyan-700 transition"
+          >
+            Go to Dashboard
+          </Link>
+          <Link
+            to="/exam"
+            className="mb-4 w-full text-center py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300 transition"
+          >
+            Switch Exam
+          </Link>
+          {/* Add more sidebar links as needed */}
+        </div>
+        {/* Main Result Content */}
+        <div className="flex-1 pl-8 pr-4 py-8">
+          <QuizResultPage
+            questions={questions.map((q, idx) => ({
+              id: idx,
+              section: 'Verbal Ability',
+              topic: '-',
+              question: q.question,
+              options: q.options,
+              correctAnswer: q.correctAnswer,
+              userAnswer: q.userAnswer,
+              status: q.userAnswer ? (q.userAnswer === q.correctAnswer ? 'Correct' : 'Incorrect') : 'Not Answered',
+              explanation: '',
+              timeSpent: 0,
+              difficulty: 'Medium',
+              type: 'MCQ'
+            }))}
+            totalScore={score}
+            totalQuestions={questions.length}
+            examTitle="Verbal Ability"
+          />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6 exam-content">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Verbal Ability</h1>
         <div className="text-lg font-semibold">
@@ -364,8 +363,8 @@ Return ONLY a valid JSON object, no other text.`;
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-sm bg-gray-200 px-2 py-0.5 rounded text-black">
-                  {currentQuestion < READING_COMP_QUESTIONS ? 'Reading Comprehension' :
-                   currentQuestion < READING_COMP_QUESTIONS + GRAMMAR_QUESTIONS ? 'Grammar' : 'Vocabulary'}
+                  {currentQuestion < 8 ? 'Reading Comprehension' :
+                   currentQuestion < 14 ? 'Grammar' : 'Vocabulary'}
                 </span>
                 <Button
                   variant="ghost"
@@ -469,6 +468,12 @@ Return ONLY a valid JSON object, no other text.`;
         onConfirm={handleConfirmEndTest}
         attemptedQuestions={questions.filter(q => q.userAnswer).length}
         totalQuestions={questions.length}
+      />
+      <TabSwitchDialog
+        isOpen={showDialog}
+        onClose={closeDialog}
+        remainingAttempts={remainingAttempts}
+        onConfirm={handleConfirmEndTest}
       />
     </div>
   );

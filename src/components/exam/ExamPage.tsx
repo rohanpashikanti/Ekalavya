@@ -8,13 +8,23 @@ import EndTestDialog from './EndTestDialog';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import TabSwitchDialog from './TabSwitchDialog';
 import useTabSwitchDetection from '@/hooks/useTabSwitchDetection';
+import QuizResultPage from '../quiz/QuizResultPage';
+import { Badge } from '@/components/ui/badge';
+import { Clock } from 'lucide-react';
 
 interface Question {
+  id: number;
+  section: string;
+  topic: string;
   question: string;
   options: string[];
   correctAnswer: string;
-  type: 'mcq';
   userAnswer?: string;
+  status: 'Correct' | 'Incorrect' | 'Not Answered';
+  explanation?: string;
+  timeSpent?: number;
+  difficulty?: string;
+  type?: string;
   markedForReview?: boolean;
 }
 
@@ -37,6 +47,7 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
   const [score, setScore] = useState(0);
   const [showEndDialog, setShowEndDialog] = useState(false);
+  const [questionStartTime, setQuestionStartTime] = useState<number | null>(null);
 
   const genAI = new GoogleGenerativeAI('AIzaSyDSNKVFGhfCCX6Onx5b8NEyk38qTH-YRXg');
 
@@ -47,37 +58,89 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
       
       let prompt = '';
-      if (topic === 'Verbal Reasoning') {
-        prompt = `Generate 20 medium to hard level multiple choice questions about Verbal Reasoning covering Blood Relations, Seating Arrangements, and Directions. 
+      if (topic === 'Arithmetic Ability-1') {
+        prompt = `Generate 20 medium to hard level multiple choice questions about Arithmetic Ability-1 covering:
+        - Percentages
+        - Profit and Loss
+        - Simple Interest
+        - Compound Interest
+        
         Each question should have 4 options and one correct answer.
         Format each question as a JSON object with:
         {
           "question": "question text",
           "options": ["option1", "option2", "option3", "option4"],
           "correctAnswer": "correct option text",
-          "type": "mcq"
+          "type": "mcq",
+          "topic": "specific topic from the list above"
+        }
+        Return ONLY a valid JSON array of these objects, no other text.`;
+      } else if (topic === 'Arithmetic Ability-2') {
+        prompt = `Generate 20 medium to hard level multiple choice questions about Arithmetic Ability-2 covering:
+        - Ratio and Proportion
+        - Time and Work
+        - Time and Distance
+        - Partnership
+        
+        Each question should have 4 options and one correct answer.
+        Format each question as a JSON object with:
+        {
+          "question": "question text",
+          "options": ["option1", "option2", "option3", "option4"],
+          "correctAnswer": "correct option text",
+          "type": "mcq",
+          "topic": "specific topic from the list above"
+        }
+        Return ONLY a valid JSON array of these objects, no other text.`;
+      } else if (topic === 'Number System') {
+        prompt = `Generate 20 medium to hard level multiple choice questions about Number System covering:
+        - Number System fundamentals
+        - HCF and LCM
+        - Simplification
+        - Averages
+        - Permutation and Combination
+        - Mixture and Alligation
+        
+        Each question should have 4 options and one correct answer.
+        Format each question as a JSON object with:
+        {
+          "question": "question text",
+          "options": ["option1", "option2", "option3", "option4"],
+          "correctAnswer": "correct option text",
+          "type": "mcq",
+          "topic": "specific topic from the list above"
+        }
+        Return ONLY a valid JSON array of these objects, no other text.`;
+      } else if (topic === 'Verbal Reasoning') {
+        prompt = `Generate 20 medium to hard level multiple choice questions about Verbal Reasoning covering:
+        - Blood Relations
+        - Seating Arrangement
+        - Directions
+        
+        Each question should have 4 options and one correct answer.
+        Format each question as a JSON object with:
+        {
+          "question": "question text",
+          "options": ["option1", "option2", "option3", "option4"],
+          "correctAnswer": "correct option text",
+          "type": "mcq",
+          "topic": "specific topic from the list above"
         }
         Return ONLY a valid JSON array of these objects, no other text.`;
       } else if (topic === 'Analogical Reasoning') {
-        prompt = `Generate 20 medium to hard level multiple choice questions about Analogical Reasoning covering Analogies, Series Completion, and Syllogisms.
+        prompt = `Generate 20 medium to hard level multiple choice questions about Analogical Reasoning covering:
+        - Analogy
+        - Alphabet Series
+        - Missing Terms
+        
         Each question should have 4 options and one correct answer.
         Format each question as a JSON object with:
         {
           "question": "question text",
           "options": ["option1", "option2", "option3", "option4"],
           "correctAnswer": "correct option text",
-          "type": "mcq"
-        }
-        Return ONLY a valid JSON array of these objects, no other text.`;
-      } else {
-        prompt = `Generate 20 medium to hard level multiple choice questions about ${topic}.
-        Each question should have 4 options and one correct answer.
-        Format each question as a JSON object with:
-        {
-          "question": "question text",
-          "options": ["option1", "option2", "option3", "option4"],
-          "correctAnswer": "correct option text",
-          "type": "mcq"
+          "type": "mcq",
+          "topic": "specific topic from the list above"
         }
         Return ONLY a valid JSON array of these objects, no other text.`;
       }
@@ -88,58 +151,38 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
       
       // Clean the response text to ensure it's valid JSON
       const cleanedText = text.replace(/```json\n?|\n?```/g, '').trim();
+      let parsedQuestions: Question[] = [];
       
       try {
-        const parsedQuestions = JSON.parse(cleanedText);
-        
-        // Validate the parsed questions
-        if (!Array.isArray(parsedQuestions) || parsedQuestions.length !== 20) {
-          throw new Error('Invalid question count');
-        }
-        
-        // Validate each question's structure
-        const validQuestions = parsedQuestions.every(q => 
-          typeof q.question === 'string' &&
-          Array.isArray(q.options) && q.options.length === 4 &&
-          typeof q.correctAnswer === 'string' &&
-          q.type === 'mcq'
-        );
-        
-        if (!validQuestions) {
-          throw new Error('Invalid question format');
-        }
-        
-        // Add userAnswer and markedForReview fields
-        const questionsWithState = parsedQuestions.map(q => ({
-          ...q,
-          userAnswer: '',
-          markedForReview: false
-        }));
-        
-        setQuestions(questionsWithState);
-        setCurrentQuestion(0);
-        setShowResults(false);
-        setTimeLeft(TOTAL_TIME);
-        setScore(0);
-      } catch (parseError) {
-        console.error('Error parsing questions:', parseError);
+        const match = cleanedText.match(/\[.*\]/s);
+        if (!match) throw new Error('No JSON array found in response.');
+        parsedQuestions = JSON.parse(match[0]);
+        if (!Array.isArray(parsedQuestions) || parsedQuestions.length !== 20) throw new Error('Invalid format');
+        parsedQuestions = parsedQuestions.filter(q => q.type === 'mcq' && Array.isArray(q.options) && q.options.length === 4 && typeof q.correctAnswer === 'string');
+        if (parsedQuestions.length !== 20) throw new Error('Not all questions are valid MCQ.');
+      } catch {
         throw new Error('Failed to parse questions. Please try again.');
       }
+      
+      setQuestions(parsedQuestions.map(q => ({ ...q, userAnswer: '', markedForReview: false })));
+      setCurrentQuestion(0);
+      setShowResults(false);
+      setTimeLeft(TOTAL_TIME);
+      setScore(0);
     } catch (error) {
-      console.error('Error generating questions:', error);
-      setError(error instanceof Error ? error.message : 'Failed to generate questions. Please try again.');
-    } finally {
-      setLoading(false);
+      setError(error instanceof Error ? error.message : 'Failed to start quiz. Please try again.');
     }
+    setLoading(false);
   };
 
   useEffect(() => {
     if (!examStarted || showResults || loading || error) return;
+    setQuestionStartTime(Date.now());
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {
           clearInterval(timerRef.current!);
-          handleConfirmEndTest();  // Directly submit without showing dialog
+          handleConfirmEndTest();
           return 0;
         }
         return t - 1;
@@ -169,13 +212,40 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
     setQuestions(qs => qs.map((q, i) => i === currentQuestion ? { ...q, markedForReview: !q.markedForReview } : q));
   };
 
-  const handleNav = (idx: number) => setCurrentQuestion(idx);
+  const handleNav = (idx: number) => {
+    setQuestions(qs => {
+      if (questionStartTime !== null && currentQuestion !== idx) {
+        const now = Date.now();
+        const elapsed = Math.floor((now - questionStartTime) / 1000);
+        return qs.map((q, i) =>
+          i === currentQuestion
+            ? { ...q, timeSpent: (q.timeSpent || 0) + elapsed }
+            : q
+        );
+      }
+      return qs;
+    });
+    setCurrentQuestion(idx);
+    setQuestionStartTime(Date.now());
+  };
 
   const handleEndTest = () => {
     setShowEndDialog(true);
   };
 
   const handleConfirmEndTest = () => {
+    setQuestions(qs => {
+      if (questionStartTime !== null) {
+        const now = Date.now();
+        const elapsed = Math.floor((now - questionStartTime) / 1000);
+        return qs.map((q, i) =>
+          i === currentQuestion
+            ? { ...q, timeSpent: (q.timeSpent || 0) + elapsed }
+            : q
+        );
+      }
+      return qs;
+    });
     setShowResults(true);
     clearInterval(timerRef.current!);
     setShowEndDialog(false);
@@ -202,6 +272,29 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
 
   const { remainingAttempts, showDialog, closeDialog } = useTabSwitchDetection({
     onMaxAttemptsReached: handleMaxAttemptsReached,
+  });
+
+  const mappedQuestions = questions.map((q, idx) => {
+    let status: 'Correct' | 'Incorrect' | 'Not Answered';
+    if (q.userAnswer) {
+      status = q.userAnswer === q.correctAnswer ? 'Correct' : 'Incorrect';
+    } else {
+      status = 'Not Answered';
+    }
+    return {
+      id: idx + 1,
+      section: topic.includes('Verbal') ? 'Verbal' : 'Aptitude',
+      topic: (q as any).topic || topic,
+      question: q.question,
+      options: q.options,
+      correctAnswer: q.correctAnswer,
+      userAnswer: q.userAnswer,
+      status,
+      explanation: (q as any).explanation || '',
+      timeSpent: (q as any).timeSpent || undefined,
+      difficulty: (q as any).difficulty || undefined,
+      type: q.type || 'MCQ',
+    };
   });
 
   if (!examStarted) {
@@ -257,36 +350,17 @@ const ExamPage: React.FC<ExamPageProps> = ({ topic, description, onComplete }) =
 
   if (showResults) {
     return (
-      <Card className="max-w-3xl mx-auto p-6">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold mb-4">Exam Results</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="text-xl font-semibold">Your Score: {score} / {questions.length}</div>
-            {questions.map((q, idx) => (
-              <div key={idx} className="p-3 border rounded">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">Q.{idx + 1}</span>
-                  <span className="text-xs bg-gray-200 px-2 py-0.5 rounded">MCQ</span>
-                  {q.markedForReview && <BookmarkCheck className="w-4 h-4 text-purple-500" />}
-                </div>
-                <div className="text-gray-700 mb-2">{q.question}</div>
-                <div>
-                  <span className="font-semibold">Your answer: </span>
-                  {q.userAnswer ? `${String.fromCharCode(65 + q.options.indexOf(q.userAnswer))}. ${q.userAnswer}` : <span className="text-gray-400">Not answered</span>}
-                  <span className="ml-2 text-xs text-blue-500">(Correct: {String.fromCharCode(65 + q.options.indexOf(q.correctAnswer))}. {q.correctAnswer})</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <QuizResultPage
+        questions={mappedQuestions}
+        totalScore={score}
+        totalQuestions={questions.length}
+        examTitle={topic}
+      />
     );
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen exam-content">
       <div className="w-56 bg-white border-r flex flex-col items-center py-6">
         <div className="mb-6 font-bold text-lg">All Questions</div>
         <div className="grid grid-cols-4 gap-2 mb-6">
