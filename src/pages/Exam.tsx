@@ -11,29 +11,29 @@ const topics = {
   // Quantitative topics
   'arithmetic-1': {
     name: 'Arithmetic Ability-1',
-    description: 'Percentage, Profit & Loss, SI & CI'
+    description: 'Percentages, Profit & Loss, Simple & Compound Interest'
   },
   'arithmetic-2': {
     name: 'Arithmetic Ability-2',
-    description: 'Ratio, Time & Work, Speed & Distance'
+    description: 'Ratio, Time & Work, Speed & Distance, Partnership'
   },
   'number-system': {
     name: 'Number System',
-    description: 'HCF/LCM, Divisibility, Prime Numbers'
+    description: 'Number System, HCF and LCM, Simplification, Averages, Permutation and Combination, Mixture and Alligation'
   },
   // Logical Reasoning topics
   'verbal-reasoning': {
     name: 'Verbal Reasoning',
-    description: 'Blood Relations, Seating, Directions'
+    description: 'Blood Relations, Seating Arrangement, Directions'
   },
   'analogical-reasoning': {
     name: 'Analogical Reasoning',
-    description: 'Analogy, Series, Syllogisms'
+    description: 'Analogy, Alphabet Series, Missing Terms,Syllogisms'
   },
   // Verbal Ability
   'verbal-ability': {
     name: 'Verbal Ability',
-    description: 'Reading Comprehension, Grammar, Vocabulary'
+    description: 'Reading & Comprehension (Reading Comprehension, Cloze Test, Critical Reasoning, Precis Summary), Grammar & Sentence Structure (Para Jumbles, Sentence Correction, Common Grammar Errors, Prepositions, Phrasal Verbs), Vocabulary & Usage (Idioms and Phrases, One Word Substitutions, Synonyms and Antonyms, Confusing Words, Root Words, Prefixes and Suffixes)'
   },
   // Daily Challenge
   'daily-challenge': {

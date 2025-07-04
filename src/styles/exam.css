@@ -1,0 +1,23 @@
+/* Prevent text selection and copying in exam components */
+.exam-content {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Prevent context menu on right click */
+.exam-content {
+  -webkit-context-menu: none;
+  -moz-context-menu: none;
+  -ms-context-menu: none;
+  context-menu: none;
+}
+
+/* Prevent copy on keyboard shortcuts */
+.exam-content {
+  -webkit-user-modify: read-only;
+  -moz-user-modify: read-only;
+  -ms-user-modify: read-only;
+  user-modify: read-only;
+} 

@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Layout from '../components/layout/Layout';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getUserData } from '@/lib/userData';
-import { Brain, Target, Trophy, Star, User, Zap } from 'lucide-react';
+import { Brain, Target, Trophy, Star, User, Zap, BookOpen, Code } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -19,6 +21,7 @@ const Dashboard: React.FC = () => {
     time: ''
   });
   const [avatar, setAvatar] = useState<string>('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadUserData = () => {
@@ -274,6 +277,32 @@ const Dashboard: React.FC = () => {
                 </Link>
               </div>
             ))}
+            <Card className="bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <Code className="w-6 h-6 text-[#F6C6EA]" />
+                  <CardTitle className="text-2xl">Technical Quiz</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-gray-600">
+                    Test your technical knowledge with theory questions and coding challenges.
+                  </p>
+                  <div className="space-y-2 text-sm text-gray-500">
+                    <div>• Theory Exam: 20 MCQs</div>
+                    <div>• Coding Exam: 5 Problems</div>
+                    <div>• Real-time Code Execution</div>
+                  </div>
+                  <Button 
+                    className="w-full bg-[#F6C6EA] hover:bg-[#E5B5D9] text-black"
+                    onClick={() => navigate('/technical')}
+                  >
+                    Start Technical Quiz
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 

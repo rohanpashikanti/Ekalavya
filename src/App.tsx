@@ -17,6 +17,10 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import AptitudeTest from "./components/AptitudeTest";
 import AIPage from "./pages/AI";
+import TechnicalQuiz from './components/quiz/TechnicalQuiz';
+import TechnicalTheoryExam from './components/exam/TechnicalTheoryExam';
+import TechnicalCodingExam from './components/exam/TechnicalCodingExam';
+import UnderConstruction from './components/UnderConstruction';
 
 const queryClient = new QueryClient();
 
@@ -79,6 +83,9 @@ const App = () => (
                 <AIPage />
               </AuthGuard>
             } />
+            <Route path="/technical" element={<UnderConstruction />} />
+            <Route path="/technical/theory" element={<UnderConstruction />} />
+            <Route path="/technical/coding" element={<UnderConstruction />} />
             
             {/* 404 route */}
             <Route path="*" element={<NotFound />} />

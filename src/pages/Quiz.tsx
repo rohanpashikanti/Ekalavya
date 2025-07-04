@@ -69,13 +69,13 @@ const Quiz: React.FC = () => {
 
   const specificTopics = {
     quantitative: [
-      { id: 'arithmetic-1', name: 'Arithmetic Ability-1', description: 'Percentage, Profit & Loss, SI & CI' },
-      { id: 'arithmetic-2', name: 'Arithmetic Ability-2', description: 'Ratio, Time & Work, Speed & Distance' },
-      { id: 'number-system', name: 'Number System', description: 'HCF/LCM, Divisibility, Prime Numbers' }
+      { id: 'arithmetic-1', name: 'Arithmetic Ability-1', description: 'Percentages, Profit & Loss, Simple & Compound Interest' },
+      { id: 'arithmetic-2', name: 'Arithmetic Ability-2', description: 'Ratio, Time & Work, Speed & Distance, Partnership' },
+      { id: 'number-system', name: 'Number System', description: 'Number System, HCF and LCM, Simplification, Averages, Permutation and Combination, Mixture and Alligation' }
     ],
     logical: [
-      { id: 'verbal-reasoning', name: 'Verbal Reasoning', description: 'Blood Relations, Seating, Directions' },
-      { id: 'analogical-reasoning', name: 'Analogical Reasoning', description: 'Analogy, Series, Syllogisms' }
+      { id: 'verbal-reasoning', name: 'Verbal Reasoning', description: 'Blood Relations, Seating Arrangement, Directions' },
+      { id: 'analogical-reasoning', name: 'Analogical Reasoning', description: 'Analogy, Alphabet Series, Missing Terms,Syllogisms' }
     ]
   };
 
